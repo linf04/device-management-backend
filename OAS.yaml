@@ -521,3 +521,35 @@ components:
           type: string
           description: 更新者
           example: JS0014
+
+  # ページング応答
+    PaginatedResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: ステータスコード
+        data:
+          type: array
+          items:
+            type: object
+          description: データリスト
+        total:
+          type: integer
+          description: 総件数
+        page:
+          type: integer
+          description: 現在のページ
+        size:
+          type: integer
+          description: ページサイズ
+        totalPages:
+          type: integer
+          description: 総ページ数
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWTトークンを使用した認証
