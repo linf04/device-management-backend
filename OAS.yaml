@@ -71,6 +71,65 @@ paths:
           description: 認証失敗
         '500':
           description: サーバー内部エラー
+
+
+    post:
+          tags:
+            - devices
+          summary: 設備を新規追加
+          description: 新しい設備情報を追加します
+          operationId: insertDevice
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Device'
+                  
+          responses:
+            "200":
+              description: データの挿入に成功しました
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                        code:
+                          type: integer
+                          example: 200
+                    
+                        data:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Device'
+            "400":
+              description: パラメータ検証に失敗しました  
+              content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        code: 
+                              type: integer
+                              example: 400
+                        error:                      
+                          type: string
+                          example: "パラメータ検証に失敗しました" 
+            "500":
+              description: サーバーエラー
+              content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        code: 
+                          type: integer
+                          example: 500
+                        error:
+                          type: string
+                          example: "サーバーエラー"
+
+
   /devices/{id}:
     parameters:
       - name: id
@@ -98,6 +157,89 @@ paths:
                     example: 200
                   data:
                     $ref: '#/components/schemas/Device'
+
+
+  /devices/{deviceId}:
+    parameters:
+      - name: id
+        in: path
+        description: 設備ID
+        required: true
+        schema:
+          type: string
+          example: HYRON-221129 PC-DC-089
+    put:
+      tags:
+        - devices
+      summary: 設備情報を編集
+      description: 設備情報を修正します
+      operationId: updateDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+              
+      responses:
+        "200":
+          description: データの編集に成功しました
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                    code:
+                      type: integer
+                      example: 200
+                
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Device'
+        "400":
+          description: パラメータ検証に失敗しました  
+          content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    code: 
+                          type: integer
+                          example: 400
+                    error:
+                      type: string
+                      example: "パラメータ検証に失敗しました"
+
+
+        "404":
+          description: リソースが存在しません
+          content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    code: 
+                          type: integer
+                          example: 404
+                    error:
+                      type: string
+                      example: "設備が存在しません"
+        "500":
+          description: サーバーエラー
+          content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    code: 
+                          type: integer
+                          example: 500
+                    error:
+                      type: string
+                      example: "サーバーエラー"   
+    
+    
     delete:
       tags:
         - devices
