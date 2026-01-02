@@ -1,15 +1,18 @@
 package com.device.management.repository;
 
-import com.device.management.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.repository.query.QueryByExampleExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import com.device.management.entity.User;
 
-/**
- * 用户 Repository
- */
+import java.util.List;
+
 @Repository
-public interface UserRepository extends JpaRepository<User, String> {
-    Optional<User> findByUserId(String userId);
+public interface UserRepository extends
+        JpaRepository<User, Long>,
+        JpaSpecificationExecutor<User>,
+        QueryByExampleExecutor<User> {
+    User findByJobNumber(String jobNumber);
 }

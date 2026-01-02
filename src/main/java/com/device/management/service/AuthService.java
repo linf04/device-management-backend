@@ -32,16 +32,18 @@ public class AuthService {
      * 用户登录
      */
     public LoginResponse login(LoginRequest loginRequest) {
-        User user = userRepository.findByUserId(loginRequest.getUserId())
-                .orElseThrow(() -> new UnauthorizedException("用户名或密码不正确"));
+        User user = userRepository.findByJobNumber(loginRequest.getUserId());
+        if (user == null) {
+            throw new UnauthorizedException("用户名或密码不正确");
+        }
 
         // 验证密码
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new UnauthorizedException("用户名或密码不正确");
         }
 
         // 生成 JWT Token
-        String token = jwtTokenProvider.generateToken(user.getUserId());
+        String token = jwtTokenProvider.generateToken(user.getJobNumber());
 
         // 构建响应
         UserDTO userDTO = convertToDTO(user);
@@ -49,7 +51,7 @@ public class AuthService {
         response.setToken(token);
         response.setUserInfo(userDTO);
 
-        log.info("User {} logged in successfully", user.getUserId());
+        log.info("User {} logged in successfully", user.getJobNumber());
         return response;
     }
 
@@ -59,12 +61,9 @@ public class AuthService {
      */
     private UserDTO convertToDTO(User user) {
         UserDTO dto = new UserDTO();
-        dto.setUserId(user.getUserId());
-        dto.setUserName(user.getUserName());
-        dto.setDepartmentCode(user.getDepartmentCode());
-        dto.setUserLevel(user.getUserLevel());
-        dto.setCreatedDate(user.getCreatedDate());
-        dto.setUpdatedDate(user.getUpdatedDate());
+        dto.setUserId(user.getJobNumber());
+        dto.setUserName(user.getJobNumber());
+        dto.setDepartmentCode(user.getDeptId());
         return dto;
     }
 }

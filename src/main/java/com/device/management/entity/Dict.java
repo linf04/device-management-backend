@@ -6,46 +6,45 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "dict")
+public class Dict {
     @Id
-    @Size(max = 50)
-    @Column(name = "user_id", nullable = false, length = 50)
-    private String userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "dict_id", nullable = false)
+    private Long id;
 
     @Size(max = 50)
     @NotNull
-    @Column(name = "dept_id", nullable = false, length = 50)
-    private String deptId;
+    @Column(name = "dict_type_code", nullable = false, length = 50)
+    private String dictTypeCode;
 
     @Size(max = 100)
     @NotNull
-    @Column(name = "name", nullable = false, length = 100)
-    private String name;
+    @Column(name = "dict_type_name", nullable = false, length = 100)
+    private String dictTypeName;
 
-    @Size(max = 50)
+    @Column(name = "dict_type_description", length = Integer.MAX_VALUE)
+    private String dictTypeDescription;
+
+    @Size(max = 100)
     @NotNull
-    @Column(name = "job_number", nullable = false, length = 50)
-    private String jobNumber;
+    @Column(name = "dict_item_name", nullable = false, length = 100)
+    private String dictItemName;
+
+    @ColumnDefault("0")
+    @Column(name = "sort")
+    private Integer sort;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "user_type_id", nullable = false)
-    private Dict userType;
-
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "password", nullable = false)
-    private String password;
+    @ColumnDefault("1")
+    @Column(name = "is_enabled", nullable = false)
+    private Short isEnabled;
 
     @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")
