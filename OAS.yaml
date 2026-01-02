@@ -32,14 +32,14 @@ paths:
           required: false
           schema:
             type: integer
-            example: 10
+            example: 15
         - name: userId
           in: query
           description: ユーザーID（フィルタ条件）
           required: false
           schema:
             type: string
-            example: xxx&XXXXXX
+            example: JS0014
       responses:
         '200':
           description: 機器リストの取得に成功
@@ -138,7 +138,7 @@ paths:
         required: true
         schema:
           type: string
-          example: dev123456
+          example: HYRON-221129 PC-DC-089
     get:
       tags:
         - devices
