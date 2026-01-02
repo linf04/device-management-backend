@@ -65,6 +65,12 @@ paths:
                   size:
                     type: integer
                     example: 10
+        '400':
+          description: パラメータ検証エラー
+        '401':
+          description: 認証失敗
+        '500':
+          description: サーバー内部エラー
   /devices/{id}:
     parameters:
       - name: id
@@ -156,7 +162,6 @@ paths:
                   error:
                     type: string
                     example: "サーバー内部エラー"
-
 components:
   schemas:
   # 機器エンティティ
@@ -164,7 +169,7 @@ components:
       type: object
       description: 機器オブジェクト
       properties:
-        deviceId:
+        deviceId:        
           type: string
           description: 機器番号（プライマリキー）
           example: HYRON-221129 PC-DC-089
