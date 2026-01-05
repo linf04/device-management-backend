@@ -1,5 +1,6 @@
 package com.deviceManagement.common;
 
+import com.deviceManagement.dto.ChangePasswordResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.deviceManagement.dto.LoginResponse;
 import lombok.Data;
@@ -65,7 +66,14 @@ public class Result<T> {
         return new Result<>(resultCode.getCode(), customMessage, null);
     }
 
-    public static <T> Result<T> success(T data) {
-        return new Result<>(200, "success", data);
+    /**
+     * 修改密码成功响应（专用 20000）
+     */
+    public static Result<ChangePasswordResponse> passwordChangedSuccess(ChangePasswordResponse data) {
+        return new Result<>(
+                ResultCode.PASSWORD_CHANGED_SUCCESS.getCode(),
+                ResultCode.PASSWORD_CHANGED_SUCCESS.getMessage(),
+                data
+        );
     }
 }

@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -26,6 +28,7 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * 用户登录：返回包含token和userInfo的登录结果
+     *
      * @param loginRequest 登录请求参数
      * @return Result<LoginResponse>：成功返回token+用户信息，失败返回错误枚举
      */
@@ -62,6 +65,18 @@ public class AuthServiceImpl implements AuthService {
         // 6. 返回登录成功结果（使用Result的loginSuccess静态工厂方法）
         return Result.loginSuccess(loginResponse);
     }
+
+
+    /**
+     * パスワード変更
+     * ・一般ユーザ：自分のパスワードのみ変更可能（旧パスワード必須）
+     * ・管理者　　：全ユーザーのパスワードをリセット可能（旧パスワード不要）
+     *
+     * @param req        変更内容（userId / currentPassword / newPassword）
+     * @param authHeader
+     * @return Result<ChangePasswordResponse> 成功時 20000, 失敗時各業務エラーコード
+     * @throws BusinessException システムエラー（ユーザ不在等）
+     */
     @Override
     @Transactional
     public Result<ChangePasswordResponse> changePassword(ChangePasswordRequest req,
@@ -72,33 +87,40 @@ public class AuthServiceImpl implements AuthService {
             return Result.error(ResultCode.TOKEN_INVALID);
         }
         String tokenUserId = jwtUtil.getUserIdFromToken(token);
+        Long tokenUserType = jwtUtil.getUserTypeIdFromToken(token);
 
-        // 2. 只能改自己的密码
-        if (!tokenUserId.equals(req.getUserId())) {
-            return Result.error(ResultCode.PARAM_ERROR, "只能修改当前登录账号的密码");
+        // 2. 角色鉴权：普通用户只能改自己；管理员可改所有人
+        boolean isAdmin = Objects.equals(tokenUserType, 11L);
+        if (!isAdmin && !tokenUserId.equals(req.getUserId())) {
+            return Result.error(ResultCode.FORBIDDEN, "无权修改他人密码");
         }
 
-        // 3. 校验旧密码
+        // 3. 校验旧密码（管理员跳过）
         User user = userRepository.findByUserId(req.getUserId())
                 .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
 
-        if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
-            return Result.error(ResultCode.PASSWORD_ERROR, "当前密码输入错误");
+        if (!isAdmin && !passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
+            return Result.error(ResultCode.WRONG_CURRENT_PASSWORD);
         }
 
-        // 4. 新旧密码不能相同
+        // 4. 新旧不能相同
         if (passwordEncoder.matches(req.getNewPassword(), user.getPassword())) {
-            return Result.error(ResultCode.FAIL, "新密码不能与旧密码相同");
+            return Result.error(ResultCode.PASSWORD_SAME_AS_OLD);
         }
 
-        // 5. 更新密码
+        // 5. 强度二次保护
+        if (!req.getNewPassword().matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
+            return Result.error(ResultCode.WEAK_NEW_PASSWORD);
+        }
+
+        // 6. 更新密码
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));
         userRepository.save(user);
 
-        // 6. 组装返回
+        // 7. 返回
         ChangePasswordResponse resp = new ChangePasswordResponse();
-        resp.setCode(0);
-        resp.setMsg("パスワードが更新されました。再度ログインしてください。");
-        return Result.success(resp);
+        resp.setCode(ResultCode.PASSWORD_CHANGED_SUCCESS.getCode());
+        resp.setMsg(ResultCode.PASSWORD_CHANGED_SUCCESS.getMessage());
+        return Result.passwordChangedSuccess(resp);
     }
 }

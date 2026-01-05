@@ -10,8 +10,15 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ResultCode {
 
-    PASSWORD_SAME_AS_OLD(40003, "新しいパスワードは古いパスワードと同じにすることはできません"),
+    /* ===== 修改密码业务码 ===== */
+    PASSWORD_CHANGED_SUCCESS(20000, "パスワードが更新されました。再度ログインしてください。"),
+    WRONG_CURRENT_PASSWORD(40001, "現在のパスワードが正しくありません"),
     WEAK_NEW_PASSWORD(40002, "新しいパスワードが強度要件を満たしていません"),
+    PASSWORD_SAME_AS_OLD(40003, "新しいパスワードは古いパスワードと同じにすることはできません"),
+
+    /* ===== 通用权限码 ==== */
+    FORBIDDEN(403, "操作に対する権限がありません"),
+
     // -------------------------- 成功状态码 --------------------------
     LOGIN_SUCCESS(200, "ログイン成功"),       // 匹配API登录成功响应
     LOGOUT_SUCCESS(200, "ログアウト成功"),     // 匹配API登出成功响应
