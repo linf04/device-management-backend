@@ -10,13 +10,21 @@ import com.deviceManagement.entity.User;
 import com.deviceManagement.exception.BusinessException;
 import com.deviceManagement.service.AuthService;
 import com.deviceManagement.utils.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 
+import java.util.concurrent.TimeUnit;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -25,10 +33,10 @@ public class AuthServiceImpl implements AuthService {
     private final DictRepository dictRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final HttpServletRequest httpServletRequest;
 
     /**
      * 用户登录：返回包含token和userInfo的登录结果
-     *
      * @param loginRequest 登录请求参数
      * @return Result<LoginResponse>：成功返回token+用户信息，失败返回错误枚举
      */
@@ -66,61 +74,91 @@ public class AuthServiceImpl implements AuthService {
         return Result.loginSuccess(loginResponse);
     }
 
-
     /**
-     * パスワード変更
-     * ・一般ユーザ：自分のパスワードのみ変更可能（旧パスワード必須）
-     * ・管理者　　：全ユーザーのパスワードをリセット可能（旧パスワード不要）
-     *
-     * @param req        変更内容（userId / currentPassword / newPassword）
-     * @param authHeader
-     * @return Result<ChangePasswordResponse> 成功時 20000, 失敗時各業務エラーコード
-     * @throws BusinessException システムエラー（ユーザ不在等）
+     * 用户登出
+     * 要求必须有有效的token才能登出
      */
     @Override
-    @Transactional
-    public Result<ChangePasswordResponse> changePassword(ChangePasswordRequest req,
-                                                         String authHeader) {
-        // 1. JWT を解析し、検証する
-        String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
-        if (!jwtUtil.validateToken(token)) {
-            return Result.error(ResultCode.TOKEN_INVALID);
+    public Result<Void> logout() {
+        try {
+            // 1.从请求头中提取令牌
+            String token = extractTokenFromRequest();
+
+            // 2.检查是否提供了token
+            if (!StringUtils.hasText(token)) {
+                log.warn("nmtoken");
+                return Result.error(ResultCode.UNAUTHORIZED, "nmtoken");
+            }
+
+            String userId = null;
+            // 3.获取用户信息
+            try {
+                userId = jwtUtil.getUserIdFromToken(token);
+                log.info("成功从Token中提取用户ID: {}", userId);
+            } catch (Exception e) {
+                log.error("从token中提取用户ID失败: {}", e.getMessage());
+                return Result.error(ResultCode.UNAUTHORIZED, "token错误");
+            }
+            // 4.使令牌失效（加入Redis黑名单）
+            jwtUtil.invalidateToken(token);
+            log.info("Token已加入黑名单，用户ID: {}", userId);
+
+            // 5.清理安全上下文
+            cleanupSecurityContext();
+
+            // 6.返回成功响应
+            return Result.logoutSuccess();
+
+        } catch (Exception e) {
+            log.error("登出处理中发生异常: {}", e.getMessage(), e);
+            // 无论如何都清理安全上下文
+            cleanupSecurityContext();
+            return Result.error(ResultCode.FAIL, "登出失败: " + e.getMessage());
         }
-        String tokenUserId = jwtUtil.getUserIdFromToken(token);
-        Long tokenUserType = jwtUtil.getUserTypeIdFromToken(token);
+    }
 
-        // 2. 一般ユーザーは自身のパスワードのみ変更可能 管理者は全ユーザーのパスワードを変更可能
-        boolean isAdmin = Objects.equals(tokenUserType, 11L);
-        if (!isAdmin && !tokenUserId.equals(req.getUserId())) {
-            return Result.error(ResultCode.FORBIDDEN, "他人のパスワードを変更する権限がありません。\n");
+    @Override
+    public Result<ChangePasswordResponse> changePassword(ChangePasswordRequest req, String authHeader) {
+        return null;
+    }
+
+    /**
+     * 从请求头中提取令牌
+     */
+    private String extractTokenFromRequest() {
+        String bearerToken = httpServletRequest.getHeader("Authorization");
+        log.debug("原始Authorization头: {}", bearerToken);
+
+        if (StringUtils.hasText(bearerToken)) {
+            // 打印bearerToken的长度和内容（注意可能包含不可见字符）
+            log.debug("Authorization头长度: {}", bearerToken.length());
+            for (int i = 0; i < bearerToken.length(); i++) {
+                char c = bearerToken.charAt(i);
+                log.trace("字符[{}]: {} (ASCII: {})", i, c, (int) c);
+            }
+
+            // 检查是否以Bearer开头（不区分大小写）
+            if (bearerToken.length() > 7 && bearerToken.substring(0, 7).equalsIgnoreCase("Bearer ")) {
+                String token = bearerToken.substring(7).trim();
+                log.debug("提取的token: {}... (长度: {})", token.substring(0, Math.min(30, token.length())), token.length());
+                return token;
+            } else {
+                log.warn("Authorization头不以Bearer开头，或者长度不足");
+            }
+        } else {
+            log.warn("Authorization头为空或不存在");
         }
-
-        // 3. 旧パスワードを検証（管理者はスキップ）
-        User user = userRepository.findByUserId(req.getUserId())
-                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
-
-        if (!isAdmin && !passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
-            return Result.error(ResultCode.WRONG_CURRENT_PASSWORD);
+        return null;
+    }
+    /**
+     * 清理安全上下文
+     */
+    private void cleanupSecurityContext() {
+        try {
+            SecurityContextHolder.clearContext();
+            log.debug("安全上下文已清理");
+        } catch (Exception e) {
+            log.warn("清理安全上下文时出错: {}", e.getMessage());
         }
-
-        // 4. 新しいパスワードは古いパスワードと同一にできません
-        if (passwordEncoder.matches(req.getNewPassword(), user.getPassword())) {
-            return Result.error(ResultCode.PASSWORD_SAME_AS_OLD);
-        }
-
-        // 5. パスワード強度の二重チェック
-        if (!req.getNewPassword().matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
-            return Result.error(ResultCode.WEAK_NEW_PASSWORD);
-        }
-
-        // 6. パスワードを更新する
-        user.setPassword(passwordEncoder.encode(req.getNewPassword()));
-        userRepository.save(user);
-
-        // 7. レスポンスを返却する
-        ChangePasswordResponse resp = new ChangePasswordResponse();
-        resp.setCode(ResultCode.PASSWORD_CHANGED_SUCCESS.getCode());
-        resp.setMsg(ResultCode.PASSWORD_CHANGED_SUCCESS.getMessage());
-        return Result.passwordChangedSuccess(resp);
     }
 }

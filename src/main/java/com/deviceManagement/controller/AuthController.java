@@ -5,6 +5,7 @@ import com.deviceManagement.dto.ChangePasswordResponse;
 import com.deviceManagement.dto.LoginRequest;
 import com.deviceManagement.dto.LoginResponse;
 import com.deviceManagement.common.Result;
+import com.deviceManagement.dto.LogoutResponse;
 import com.deviceManagement.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,5 +45,14 @@ public class AuthController {
             @RequestHeader("Authorization") String authHeader) {
 
         return authService.changePassword(req, authHeader);
+    }
+
+    /**
+     * 用户登出接口
+     * @return Result<Void>：登出结果
+     */
+    @PostMapping("/logout")
+    public Result<Void> logout() {
+        return authService.logout();
     }
 }

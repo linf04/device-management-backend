@@ -1,18 +1,26 @@
 package com.deviceManagement.utils;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import javax.crypto.SecretKey;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtUtil {
-    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
+
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Value("${jwt.secret}")
     private String secretKey; // 假设该密钥是URL安全Base64编码格式
@@ -20,22 +28,33 @@ public class JwtUtil {
     @Value("${jwt.expiration-time}")
     private long expirationTime;
 
+    // Redis黑名单key前缀
+    private static final String TOKEN_BLACKLIST_PREFIX = "jwt:blacklist:";
+
+    // 缓存SecretKey
+    private SecretKey cachedSecretKey;
+
     /**
      * 生成SecretKey对象：处理URL安全Base64编码的密钥
      */
     private SecretKey getSigningKey() {
-        try {
-            // 使用URL安全Base64解码器解码密钥（解决'-'字符问题）
-            byte[] keyBytes = java.util.Base64.getUrlDecoder().decode(secretKey);
-            // 验证密钥长度（HS256需≥32字节）
-            if (keyBytes.length < 32) {
-                throw new IllegalStateException("密钥长度不足，HS256算法要求至少32字节（解码后）");
+        if (cachedSecretKey == null) {
+            synchronized (this) {
+                if (cachedSecretKey == null) {
+                    try {
+                        byte[] keyBytes = Decoders.BASE64URL.decode(secretKey);
+                        if (keyBytes.length < 32) {
+                            throw new IllegalStateException("密钥长度不足，HS256算法要求至少32字节");
+                        }
+                        cachedSecretKey = Keys.hmacShaKeyFor(keyBytes);
+                    } catch (Exception e) {
+                        log.error("JWT密钥初始化失败", e);
+                        throw new RuntimeException("JWT配置错误", e);
+                    }
+                }
             }
-            return Keys.hmacShaKeyFor(keyBytes);
-        } catch (IllegalArgumentException e) {
-            log.error("密钥解码失败，可能不是URL安全Base64格式：{}", e.getMessage());
-            throw new RuntimeException("密钥格式错误", e);
         }
+        return cachedSecretKey;
     }
 
     /**
@@ -71,10 +90,18 @@ public class JwtUtil {
         if (token == null || token.trim().isEmpty()) {
             throw new IllegalArgumentException("Token不能为空");
         }
+
+        token = token.trim();
+
+        // 检查是否在黑名单中
+        if (isTokenBlacklisted(token)) {
+            throw new JwtException("令牌已被撤销");
+        }
+
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
-                .parseClaimsJws(token.trim())
+                .parseClaimsJws(token)
                 .getBody();
     }
 
@@ -112,5 +139,77 @@ public class JwtUtil {
             log.warn("Token验证失败：{}", e.getMessage());
             return false;
         }
+    }
+
+    // ==================== Redis黑名单功能 ====================
+    /**
+     * 使令牌失效（加入黑名单）
+     * 在用户登出或需要强制令牌失效时调用
+     */
+    public void invalidateToken(String token) {
+        try {
+            Claims claims = parseToken(token);
+            Date expiration = claims.getExpiration();
+            long ttl = expiration.getTime() - System.currentTimeMillis();
+
+            // 只对未过期的令牌加入黑名单
+            if (ttl > 0) {
+                addToBlacklist(token, ttl);
+                log.debug("令牌已加入黑名单，剩余有效期: {}秒", ttl / 1000);
+            }
+        } catch (JwtException e) {
+            log.warn("令牌失效操作失败，令牌可能已过期或无效: {}", e.getMessage());
+            // 如果令牌已过期或无效，无需加入黑名单
+        }
+    }
+
+    /**
+     * 将令牌加入黑名单（私有方法）
+     */
+    private void addToBlacklist(String token, long ttlMillis) {
+        String tokenHash = generateTokenHash(token);
+        String redisKey = TOKEN_BLACKLIST_PREFIX + tokenHash;
+
+        redisTemplate.opsForValue().set(
+                redisKey,
+                "1",  // 值不重要，只需要key存在即可
+                ttlMillis,
+                TimeUnit.MILLISECONDS
+        );
+    }
+
+    /**
+     * 检查令牌是否在黑名单中
+     */
+    private boolean isTokenBlacklisted(String token) {
+        String tokenHash = generateTokenHash(token);
+        String redisKey = TOKEN_BLACKLIST_PREFIX + tokenHash;
+
+        Boolean exists = redisTemplate.hasKey(redisKey);
+        return Boolean.TRUE.equals(exists);
+    }
+
+
+    /**
+     * 获取令牌剩余有效期（单位：秒）
+     * 新增的实用方法
+     */
+    public long getTokenTTL(String token) {
+        try {
+            Claims claims = parseToken(token);
+            Date expiration = claims.getExpiration();
+            long remaining = expiration.getTime() - System.currentTimeMillis();
+            return Math.max(0, remaining / 1000); // 返回剩余秒数，不小于0
+        } catch (Exception e) {
+            return 0; // 如果令牌无效，返回0
+        }
+    }
+
+    /**
+     * 生成令牌哈希（简单实现，避免存储原始token）
+     * 生产环境可以考虑使用更安全的哈希算法
+     */
+    private String generateTokenHash(String token) {
+        return Integer.toHexString(token.hashCode());
     }
 }

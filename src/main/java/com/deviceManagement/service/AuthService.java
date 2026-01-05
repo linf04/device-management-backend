@@ -5,6 +5,7 @@ import com.deviceManagement.dto.ChangePasswordResponse;
 import com.deviceManagement.dto.LoginRequest;
 import com.deviceManagement.dto.LoginResponse;
 import com.deviceManagement.common.Result;
+import com.deviceManagement.dto.LogoutResponse;
 
 public interface AuthService {
     /**
@@ -13,6 +14,13 @@ public interface AuthService {
      * @return
      */
     Result<LoginResponse> login(LoginRequest loginRequest);
+
+    /**
+     * 用户登出
+     * @return Result<Void>：登出结果
+     */
+    Result<Void> logout();
+
 
 
     /**
