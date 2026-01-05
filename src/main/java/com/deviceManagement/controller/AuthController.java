@@ -1,7 +1,7 @@
 package com.deviceManagement.controller;
 
-import com.deviceManagement.DTO.LoginRequest;
-import com.deviceManagement.DTO.LoginResponse;
+import com.deviceManagement.dto.LoginRequest;
+import com.deviceManagement.dto.LoginResponse;
 import com.deviceManagement.common.Result;
 import com.deviceManagement.service.AuthService;
 import lombok.RequiredArgsConstructor;

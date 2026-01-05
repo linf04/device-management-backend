@@ -1,10 +1,10 @@
 package com.deviceManagement.service.impl;
 
-import com.deviceManagement.DTO.LoginRequest;
-import com.deviceManagement.DTO.LoginResponse;
-import com.deviceManagement.DTO.UserInfo;
-import com.deviceManagement.Repository.DictRepository;
-import com.deviceManagement.Repository.UserRepository;
+import com.deviceManagement.dto.LoginRequest;
+import com.deviceManagement.dto.LoginResponse;
+import com.deviceManagement.dto.UserInfo;
+import com.deviceManagement.repository.DictRepository;
+import com.deviceManagement.repository.UserRepository;
 import com.deviceManagement.common.Result;
 import com.deviceManagement.common.ResultCode;
 import com.deviceManagement.entity.Dict;
