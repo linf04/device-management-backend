@@ -10,21 +10,13 @@ import com.deviceManagement.entity.User;
 import com.deviceManagement.exception.BusinessException;
 import com.deviceManagement.service.AuthService;
 import com.deviceManagement.utils.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 
-import java.util.concurrent.TimeUnit;
-
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -33,12 +25,18 @@ public class AuthServiceImpl implements AuthService {
     private final DictRepository dictRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final HttpServletRequest httpServletRequest;
 
     /**
+<<<<<<< HEAD
      * ユーザーログイン：tokenとuserInfoを含むログイン結果を返す
      * @param loginRequest ログインリクエストパラメータ
      * @return Result<LoginResponse>：成功時はtoken+ユーザー情報、失敗時はエラー列挙型を返す
+=======
+     * 用户登录：返回包含token和userInfo的登录结果
+     *
+     * @param loginRequest 登录请求参数
+     * @return Result<LoginResponse>：成功返回token+用户信息，失败返回错误枚举
+>>>>>>> 20ef5d44e27be8928c63249c7558ae539c99f808
      */
     @Override
     public Result<LoginResponse> login(LoginRequest loginRequest) {
@@ -74,6 +72,7 @@ public class AuthServiceImpl implements AuthService {
         return Result.loginSuccess(loginResponse);
     }
 
+<<<<<<< HEAD
     /**
      * ユーザーログアウト
      * 有効なtokenがなければログアウトできないことを要求
@@ -115,9 +114,26 @@ public class AuthServiceImpl implements AuthService {
             cleanupSecurityContext();
             return Result.error(ResultCode.FAIL, "ログアウト失敗: " + e.getMessage());
         }
+=======
+    @Override
+    public Result<Void> logout() {
+        return null;
+>>>>>>> 20ef5d44e27be8928c63249c7558ae539c99f808
     }
 
+
+    /**
+     * パスワード変更
+     * ・一般ユーザ：自分のパスワードのみ変更可能（旧パスワード必須）
+     * ・管理者　　：全ユーザーのパスワードをリセット可能（旧パスワード不要）
+     *
+     * @param req        変更内容（userId / currentPassword / newPassword）
+     * @param authHeader
+     * @return Result<ChangePasswordResponse> 成功時 20000, 失敗時各業務エラーコード
+     * @throws BusinessException システムエラー（ユーザ不在等）
+     */
     @Override
+<<<<<<< HEAD
     public Result<ChangePasswordResponse> changePassword(ChangePasswordRequest req, String authHeader) {
         return null;
     }
@@ -159,6 +175,51 @@ public class AuthServiceImpl implements AuthService {
             log.debug("セキュリティコンテキストをクリーンアップしました");
         } catch (Exception e) {
             log.warn("セキュリティコンテキストのクリーンアップ中にエラーが発生: {}", e.getMessage());
+=======
+    @Transactional
+    public Result<ChangePasswordResponse> changePassword(ChangePasswordRequest req,
+                                                         String authHeader) {
+        // 1. JWT を解析し、検証する
+        String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+        if (!jwtUtil.validateToken(token)) {
+            return Result.error(ResultCode.TOKEN_INVALID);
         }
+        String tokenUserId = jwtUtil.getUserIdFromToken(token);
+        Long tokenUserType = jwtUtil.getUserTypeIdFromToken(token);
+
+        // 2. 一般ユーザーは自身のパスワードのみ変更可能 管理者は全ユーザーのパスワードを変更可能
+        boolean isAdmin = Objects.equals(tokenUserType, 11L);
+        if (!isAdmin && !tokenUserId.equals(req.getUserId())) {
+            return Result.error(ResultCode.FORBIDDEN, "他人のパスワードを変更する権限がありません。\n");
+>>>>>>> 20ef5d44e27be8928c63249c7558ae539c99f808
+        }
+
+        // 3. 旧パスワードを検証（管理者はスキップ）
+        User user = userRepository.findByUserId(req.getUserId())
+                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
+
+        if (!isAdmin && !passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
+            return Result.error(ResultCode.WRONG_CURRENT_PASSWORD);
+        }
+
+        // 4. 新しいパスワードは古いパスワードと同一にできません
+        if (passwordEncoder.matches(req.getNewPassword(), user.getPassword())) {
+            return Result.error(ResultCode.PASSWORD_SAME_AS_OLD);
+        }
+
+        // 5. パスワード強度の二重チェック
+        if (!req.getNewPassword().matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
+            return Result.error(ResultCode.WEAK_NEW_PASSWORD);
+        }
+
+        // 6. パスワードを更新する
+        user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        userRepository.save(user);
+
+        // 7. レスポンスを返却する
+        ChangePasswordResponse resp = new ChangePasswordResponse();
+        resp.setCode(ResultCode.PASSWORD_CHANGED_SUCCESS.getCode());
+        resp.setMsg(ResultCode.PASSWORD_CHANGED_SUCCESS.getMessage());
+        return Result.passwordChangedSuccess(resp);
     }
 }

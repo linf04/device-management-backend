@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * パスワード変更の応答
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
