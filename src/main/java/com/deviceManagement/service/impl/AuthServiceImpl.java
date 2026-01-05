@@ -157,16 +157,19 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     *
-     * @param req
-     * @param authHeader
-     * @return
+     * パスワード変更
+     *・一般ユーザ：自分のパスワードのみ変更可能（旧パスワード必須）
+     *・管理者　　：全ユーザーのパスワードをリセット可能（旧パスワード不要）
+     * @param req  変更内容（userId / currentPassword / newPassword）
+     * @param authHeader Authorization: Bearer <JWT>
+     * @return Result<ChangePasswordResponse> 成功時 20000, 失敗時各業務エラーコード
+     * @throws BusinessException システムエラー（ユーザ不在等）
      */
     @Override
     @Transactional
     public Result<ChangePasswordResponse> changePassword(ChangePasswordRequest req,
                                                          String authHeader) {
-        // 1. 解析并验证 JWT
+        // 1.JWT を解析し、検証する
         String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
         if (!jwtUtil.validateToken(token)) {
             return Result.error(ResultCode.TOKEN_INVALID);
@@ -174,13 +177,13 @@ public class AuthServiceImpl implements AuthService {
         String tokenUserId = jwtUtil.getUserIdFromToken(token);
         Long tokenUserType = jwtUtil.getUserTypeIdFromToken(token);
 
-        // 2. 角色鉴权：普通用户只能改自己；管理员可改所有人
+        // 2. 一般ユーザーは自身のパスワードのみ変更可能 管理者は全ユーザーのパスワードを変更可能
         boolean isAdmin = Objects.equals(tokenUserType, 11L);
         if (!isAdmin && !tokenUserId.equals(req.getUserId())) {
-            return Result.error(ResultCode.FORBIDDEN, "无权修改他人密码");
+            return Result.error(ResultCode.FORBIDDEN, "他人のパスワードを変更する権限がありません");
         }
 
-        // 3. 校验旧密码（管理员跳过）
+        // 3. 旧パスワードを検証（管理者はスキップ）
         User user = userRepository.findByUserId(req.getUserId())
                 .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
 
@@ -188,21 +191,21 @@ public class AuthServiceImpl implements AuthService {
             return Result.error(ResultCode.WRONG_CURRENT_PASSWORD);
         }
 
-        // 4. 新旧不能相同
+        // 4. 新しいパスワードは古いパスワードと同一にできません
         if (passwordEncoder.matches(req.getNewPassword(), user.getPassword())) {
             return Result.error(ResultCode.PASSWORD_SAME_AS_OLD);
         }
 
-        // 5. 强度二次保护
+        // 5. パスワード強度の二重チェック
         if (!req.getNewPassword().matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
             return Result.error(ResultCode.WEAK_NEW_PASSWORD);
         }
 
-        // 6. 更新密码
+        // 6. パスワードを更新する
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));
         userRepository.save(user);
 
-        // 7. 返回
+        // 7. レスポンスを返却する
         ChangePasswordResponse resp = new ChangePasswordResponse();
         resp.setCode(ResultCode.PASSWORD_CHANGED_SUCCESS.getCode());
         resp.setMsg(ResultCode.PASSWORD_CHANGED_SUCCESS.getMessage());
