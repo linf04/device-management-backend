@@ -1,4 +1,4 @@
-package com.deviceManagement.Repository;
+package com.deviceManagement.repository;
 
 import com.deviceManagement.entity.Dict;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,7 +1,7 @@
 package com.deviceManagement.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.deviceManagement.DTO.LoginResponse;
+import com.deviceManagement.dto.LoginResponse;
 import lombok.Data;
 
 

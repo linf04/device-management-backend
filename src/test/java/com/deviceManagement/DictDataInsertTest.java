@@ -1,6 +1,6 @@
 package com.deviceManagement;
 
-import com.deviceManagement.Repository.DictRepository;
+import com.deviceManagement.repository.DictRepository;
 import com.deviceManagement.entity.Dict;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

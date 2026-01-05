@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
     public Result<?> handleBusinessException(BusinessException e) {
         // 根据异常code映射到ResultCode枚举
         ResultCode resultCode = mapCodeToResultCode(e.getCode());
-        logger.warn("业务异常：code={}, message={}", resultCode.getCode(), resultCode.getMessage());
+        logger.warn("業務エラー：code={}, message={}", resultCode.getCode(), resultCode.getMessage());
         // 指定泛型<Void>匹配Result.error方法的返回类型
         return Result.<Void>error(resultCode);
     }
@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BindException.class)
     public Result<?> handleBindException(BindException e) {
         String errorMsg = e.getBindingResult().getFieldError().getDefaultMessage();
-        logger.warn("参数校验异常：{}", errorMsg);
+        logger.warn("パラメータチェックエラー：{}", errorMsg);
         // 使用PARAM_ERROR枚举的code，结合具体错误信息返回
         return Result.<Void>error(ResultCode.PARAM_ERROR, errorMsg);
     }
@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public Result<?> handleGlobalException(Exception e) {
-        logger.error("系统异常：", e); // 记录完整堆栈用于排查
+        logger.error("システムエラー：", e); // 记录完整堆栈用于排查
         // 直接使用FAIL枚举返回系统错误
         return Result.<Void>error(ResultCode.FAIL);
     }

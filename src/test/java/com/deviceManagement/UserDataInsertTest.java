@@ -1,6 +1,6 @@
 package com.deviceManagement;
 
-import com.deviceManagement.Repository.UserRepository;
+import com.deviceManagement.repository.UserRepository;
 import com.deviceManagement.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

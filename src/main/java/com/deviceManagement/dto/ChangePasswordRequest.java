@@ -1,4 +1,4 @@
-package com.deviceManagement.DTO;
+package com.deviceManagement.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
