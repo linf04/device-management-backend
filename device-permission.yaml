@@ -30,6 +30,18 @@ paths:
           required: false
           schema:
             type: integer
+        - name: deviceId
+          in: query
+          description: 設備ID
+          required: false
+          schema:
+            type: string
+        - name: userId
+          in: query
+          description: ユーザID(jobNumber?)
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: 権限一覧
