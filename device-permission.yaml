@@ -4,6 +4,9 @@ info:
   description: DA04部門内機器管理システムの権限管理モジュール OpenAPI 仕様
   version: 1.0.0
 
+servers:
+  - url: http://localhost:8080/api/
+
 tags:
   - name: 権限管理
     description: 設備使用権限管理操作
@@ -51,6 +54,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DevicePermissions'
+
       responses:  
         '200':
           description: 権限作成成功
@@ -62,7 +66,8 @@ paths:
                   - properties:
                       data: 
                         type: string
-                        example: "権限作成成功"                   
+                        example: "権限作成成功"      
+                                   
 
   /permissions/{permissionId}:
     get:
@@ -205,38 +210,57 @@ components:
       properties:
         permissionId:
           type: string
+          example: ""
         deviceId:
           type: string
+          example: "123123"
         domainStatus:
           type: string
+          example: "1"
         domainGroup:
           type: string
+          example: "hyronjs"
         noDomainReason:
           type: string
+          example: "設備使用権限管理システムへの登録が必要です。"
         smartitStatus:
           type: string
+          example: "1"
         noSmartitReason:
           type: string
+          example: "SmartITへの登録が必要です。"
         usbStatus:
           type: string
+          example: "1"
         usbReason:
           type: string
+          example: "USB接続が必要です。"
         usbExpireDate:
           type: string
+          example: "2022-12-31"
         antivirusStatus:
           type: string
+          example: "1"
         noSymantecReason:
           type: string
+          example: "Symantec Antivirusのインストールが必要です。"
         remark:
           type: string
+          example: "備考"
         createTime:
           type: string
+          example: ""
         creater:
           type: string
+          example: ""
         updateTime:
           type: string
+          example: ""
         updater:
           type: string
+          example: ""
+
+        
 
     User:
       type: object
