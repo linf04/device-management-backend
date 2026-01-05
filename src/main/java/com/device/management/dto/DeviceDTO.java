@@ -1,4 +1,4 @@
-package com.device.dto;
+package com.device.management.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
