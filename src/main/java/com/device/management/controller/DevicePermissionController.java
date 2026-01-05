@@ -3,8 +3,10 @@ package com.device.management.controller;
 import com.device.management.dto.ApiResponse;
 import com.device.management.dto.PermissionsDTO;
 import com.device.management.entity.DeviceInfo;
+import com.device.management.entity.DevicePermission;
 import com.device.management.entity.User;
 import com.device.management.service.DevicePermissionService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/permissions")
 public class DevicePermissionController {
-    @Autowired
+    @Resource
     DevicePermissionService devicePermissionService;
 
     //権限一覧を照会します
@@ -40,10 +42,16 @@ public class DevicePermissionController {
 
     //権限を追加します
     @PostMapping
-    public ApiResponse<PermissionsDTO> addPermissions(
-            @RequestBody PermissionsDTO permissionsDTO
+    public  ApiResponse<PermissionsDTO> addPermissions(
+            @RequestBody PermissionsDTO devicePermission
     ){
-        return devicePermissionService.addPermissions(permissionsDTO);
+        return devicePermissionService.addPermissions(devicePermission);
+    }
+
+    //権限詳細
+    @GetMapping(value = "/{id}")
+    public ApiResponse<PermissionsDTO> getPermissions() {
+        return null;
     }
 
     //権限を更新します
@@ -53,6 +61,7 @@ public class DevicePermissionController {
     ){
         return devicePermissionService.updatePermissions(permissionsDTO);
     }
+
     //権限を削除します
     @DeleteMapping(value = "/{id}")
     public ApiResponse<Void> deletePermissions(
@@ -60,6 +69,7 @@ public class DevicePermissionController {
     ){
         return devicePermissionService.deletePermissions(id);
     }
+
     //権限をexcelファイル形式でエクスポートします
     @GetMapping(value = "/export")
     public ApiResponse<Void> exportPermissions(

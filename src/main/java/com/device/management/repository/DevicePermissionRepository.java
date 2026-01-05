@@ -16,5 +16,7 @@ public interface DevicePermissionRepository
         JpaSpecificationExecutor<DevicePermission>,
         QueryByExampleExecutor<DevicePermission>
 {
-    List<DevicePermission> findDevicePermissionsByDevice(DeviceInfo device, Pageable pageable);
+    DevicePermission findDevicePermissionsByDevice(DeviceInfo device);
+
+
 }
