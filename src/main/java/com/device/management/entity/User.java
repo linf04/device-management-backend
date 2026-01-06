@@ -1,46 +1,90 @@
 package com.device.management.entity;
 
+
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * 用户实体类
+ * ユーザエンティティ（usersテーブル）
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name = "USERS")
+@Table(name = "users")
 public class User {
 
     @Id
-    @Column(name = "USER_ID", length = 20)
-    private String userId;
+    @Column(name = "user_id", length = 50)
+    private String userId; // ユーザID（プライマリキー）
 
-    @Column(name = "USER_NAME", length = 100, nullable = false)
-    private String userName;
+    @Column(name = "dept_id", length = 50, nullable = false)
+    private String deptId; // 部署番号
 
-    @Column(name = "DEPARTMENT_CODE", length = 20, nullable = false)
-    private String departmentCode;
+    @Column(name = "name", length = 100, nullable = false)
+    private String name; // 氏名
 
-    @Column(name = "USER_LEVEL", length = 20, nullable = false)
-    private String userLevel;
-
-    @Column(name = "PASSWORD_HASH", length = 200, nullable = false)
-    private String passwordHash;
+    @Column(name = "password", length = 255, nullable = false)
+    private String password; // パスワード（暗号化保存）
 
     @CreationTimestamp
-    @Column(name = "CREATED_DATE")
-    private LocalDateTime createdDate;
+    @Column(name = "create_time")
+    private LocalDateTime createTime; // 作成日時
+
+    @Column(name = "creater", length = 100)
+    private String creater; // 作成者
 
     @UpdateTimestamp
-    @Column(name = "UPDATED_DATE")
-    private LocalDateTime updatedDate;
+    @Column(name = "update_time")
+    private LocalDateTime updateTime; // 更新日時
+
+    @Column(name = "updater", length = 100)
+    private String updater; // 更新者
+
+    // ============= 关联关系 =============
+
+    // 用户类型（字典关联）
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_type_id", referencedColumnName = "dict_id", insertable = false, updatable = false)
+    private Dict userType;
+
+    @Column(name = "user_type_id")
+    private Long userTypeId; // 用户类型ID（辞書項目：USER_TYPE 関連）
+
+    // 用户拥有的设备（一对多）
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Device> devices = new ArrayList<>();
+
+    // 用户的采样检查记录（一对多）
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<SamplingCheck> samplingChecks = new ArrayList<>();
+
+    // ============= 构造函数 =============
+
+    public User() {
+        this.createTime = LocalDateTime.now();
+        this.updateTime = LocalDateTime.now();
+    }
+
+    public User(String userId, String name, String deptId, Long userTypeId, String password) {
+        this.userId = userId;
+        this.name = name;
+        this.deptId = deptId;
+        this.userTypeId = userTypeId;
+        this.password = password;
+        this.createTime = LocalDateTime.now();
+        this.updateTime = LocalDateTime.now();
+    }
+
 
 }

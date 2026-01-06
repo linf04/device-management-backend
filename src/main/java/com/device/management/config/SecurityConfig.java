@@ -53,6 +53,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login", "/auth/logout").permitAll()
+                        // 开放导出接口（测试用）
+                        .requestMatchers("/api/devices/export/excel").permitAll()
+                        .requestMatchers("/api/devices/test").permitAll()
+                        // 开放设备删除接口（注意：这里开放了DELETE操作，生产环境建议限制）
+                        .requestMatchers("/api/devices/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
