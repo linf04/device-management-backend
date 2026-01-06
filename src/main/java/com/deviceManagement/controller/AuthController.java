@@ -11,6 +11,7 @@ import com.deviceManagement.service.AuthService;
 import com.deviceManagement.security.CryptoUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -42,6 +43,13 @@ public class AuthController {
     /* 1. ログイン（密文） */
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+        // 基本的なパラメータ検証
+        if (!StringUtils.hasText(loginRequest.getUserId())) {
+            return ApiResponse.error(ApiResponseCode.PARAM_ERROR, "ユーザーIDは空にできません");
+        }
+        if (!StringUtils.hasText(loginRequest.getPassword())) {
+            return ApiResponse.error(ApiResponseCode.PARAM_ERROR, "パスワードは空にできません");
+        }
         decryptPasswordFields(loginRequest);
         return authService.login(loginRequest);
     }
