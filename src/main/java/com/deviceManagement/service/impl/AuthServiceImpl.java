@@ -84,6 +84,7 @@ public class AuthServiceImpl implements AuthService {
             // 2.tokenが提供されているかチェック
             if (!StringUtils.hasText(token)) {
                 log.warn("nmtoken");
+                cleanupSecurityContext();
                 return ApiResponse.error(ApiResponseCode.UNAUTHORIZED, "nmtoken");
             }
 
