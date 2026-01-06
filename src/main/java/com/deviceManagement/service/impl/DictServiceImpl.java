@@ -7,6 +7,7 @@ import com.deviceManagement.dto.DictResponse;
 import com.deviceManagement.repository.DictRepository;
 import com.deviceManagement.service.DictService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -14,10 +15,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @Author： hexy
- * @Date： 2026/01/05 17:11
- * @Describe：
+ * &#064;Author:  hexy
+ * &#064;Date:  2026/01/05 17:11
+ * &#064;Describe:  辞書項目を検索する
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DictServiceImpl implements DictService {
@@ -26,7 +28,7 @@ public class DictServiceImpl implements DictService {
     /**
      * 辞書タイプのコードに基づいて辞書項目を検索する（sortで昇順に並べ替え）
      *
-     * @param dictTypeCode
+     * @param dictTypeCode 辞書タイプ
      * @return 辞書項目リスト
      */
     @Override
@@ -62,6 +64,7 @@ public class DictServiceImpl implements DictService {
             return Result.success(response);
 
         } catch (Exception e) {
+            log.error("辞書項目を検索中に例外が発生: {}", e.getMessage(), e);
             return Result.error(ResultCode.SYSTEM_ERROR, "システムエラーが発生しました");
         }
     }
