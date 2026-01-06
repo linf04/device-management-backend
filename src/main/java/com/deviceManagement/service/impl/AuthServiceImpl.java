@@ -32,7 +32,6 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final HttpServletRequest httpServletRequest;
-
     /**
      * ユーザーログイン：tokenとuserInfoを含むログイン結果を返す
      * @param loginRequest ログインリクエストパラメータ
