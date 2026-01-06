@@ -87,7 +87,7 @@ public class ApiResponse<T> {
         return new ApiResponse<>(
                 ApiResponseCode.PASSWORD_CHANGED_SUCCESS.getCode(),
                 ApiResponseCode.PASSWORD_CHANGED_SUCCESS.getMessage(),
-                data
+                null
         );
     }
 }
