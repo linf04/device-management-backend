@@ -25,6 +25,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final JwtTokenProvider jwtTokenProvider;
+
+    // 添加构造函数注入
+    public SecurityConfig(JwtTokenProvider jwtTokenProvider) {
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
+
     /**
      * パスワードエンコーダー
      */
@@ -54,10 +61,19 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/logout").permitAll()
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/auth/login",
+                                "/api/auth/register",
+                                "/auth/register",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/webjars/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -65,28 +81,5 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public JwtTokenProvider jwtUtil() {
-        return new JwtTokenProvider(redisTemplate());
-    }
-
-    /**
-     * Redis接続ファクトリー設定
-     */
-    @Bean
-    public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory();
-    }
-    /**
-     * RedisTemplate設定
-     */
-    @Bean
-    public RedisTemplate<String, String> redisTemplate() {
-        // Redis配置
-        RedisTemplate<String, String> template = new RedisTemplate<>();
-        template.setConnectionFactory(redisConnectionFactory());
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new StringRedisSerializer());
-        return template;
-    }
+    // ... 其他代码保持不变 ...
 }
