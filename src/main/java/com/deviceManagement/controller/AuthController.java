@@ -61,37 +61,4 @@ public class AuthController {
         return authService.logout();
     }
 
-
-    /**
-     * ユーザーログインインターフェース
-     * @param loginRequest ログインリクエストパラメータ（従業員番号+パスワード）
-     * @return Result<String>：成功時はTokenを返し、失敗時はエラーメッセージを返す
-     */
-//    @PostMapping("/login")
-//    public Result<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-//        return authService.login(loginRequest);
-//    }
-
-    /**
-     * パスワード変更（ログイン後）
-     * @param req
-     * @param authHeader
-     * @return
-     */
-//    @PostMapping("/change-password")
-//    public Result<ChangePasswordResponse> changePassword(
-//            @Valid @RequestBody ChangePasswordRequest req,
-//            @RequestHeader("Authorization") String authHeader) {
-//        return authService.changePassword(req, authHeader);
-//    }
-
-    /**
-     * ユーザーログアウトインターフェース
-     * @return Result<Void>：ログアウト結果
-     */
-//    @PostMapping("/logout")
-//    public Result<Void> logout() {
-//        return authService.logout();
-//    }
-//
 }
