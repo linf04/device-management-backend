@@ -36,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // 如果是登录接口，直接放行
+        // ログインインターフェースの場合、直接通す
         String requestURI = request.getRequestURI();
         if (requestURI.equals("/api/auth/login") || requestURI.equals("/auth/login")) {
             filterChain.doFilter(request, response);
@@ -46,21 +46,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            // 检查是否有token
+            // tokenがあるかチェック
             if (!StringUtils.hasText(jwt)) {
-                // 没有token，检查是否是允许匿名访问的接口
+                // tokenがない場合、匿名アクセスが許可されているインターフェースかどうかをチェック
                 if (isPermittedUrl(requestURI)) {
                     filterChain.doFilter(request, response);
                     return;
                 } else {
-                    // 需要认证但没有token，返回401
+                    // 認証が必要だがtokenがない場合、401を返す
                     log.warn("No JWT token found for protected endpoint: {}", requestURI);
                     sendErrorResponse(response, 40100, "トークンが無効または期限切れです");
                     return;
                 }
             }
 
-            // 验证token
+            // tokenを検証
             if (jwtTokenProvider.validateToken(jwt)) {
                 String userId = jwtTokenProvider.getUserIdFromToken(jwt);
 
@@ -71,36 +71,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.debug("User authenticated: {}", userId);
 
-                // 继续过滤器链
+                // フィルター連鎖を続行
                 filterChain.doFilter(request, response);
             } else {
-                // token验证失败
+                // token検証に失敗
                 log.warn("Token validation failed");
                 sendErrorResponse(response, 40100, "トークンが無効または期限切れです");
             }
 
         } catch (io.jsonwebtoken.security.SignatureException e) {
-            // Token签名无效
+            // Token署名が無効
             log.warn("JWT signature invalid: {}", e.getMessage());
             sendErrorResponse(response, 40102, "トークンの署名が無効です");
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            // Token过期
+            // Tokenの有効期限切れ
             log.warn("JWT token expired: {}", e.getMessage());
             sendErrorResponse(response, 401, "トークンの有効期限が切れています");
         } catch (io.jsonwebtoken.MalformedJwtException e) {
-            // Token格式错误
+            // Tokenフォーマットエラー
             log.warn("JWT malformed: {}", e.getMessage());
             sendErrorResponse(response, 40100, "トークンが無効または期限切れです");
         } catch (io.jsonwebtoken.UnsupportedJwtException e) {
-            // 不支持的Token类型
+            // サポートされていないTokenタイプ
             log.warn("Unsupported JWT: {}", e.getMessage());
             sendErrorResponse(response, 40100, "サポートされていないトークンです");
         } catch (IllegalArgumentException e) {
-            // Token为空
+            // Tokenが空
             log.warn("JWT token is empty: {}", e.getMessage());
             sendErrorResponse(response, 40100, "トークンが無効または期限切れです");
         } catch (Exception ex) {
-            // 其他异常
+            // その他の例外
             log.error("Could not set user authentication in security context", ex);
             sendErrorResponse(response, 50001, "サーバーが混雑しています。しばらくしてから再度お試しください");
         }
@@ -118,10 +118,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 判断是否是允许匿名访问的URL
+     * 匿名アクセスが許可されたURLかどうかを判断
      */
     private boolean isPermittedUrl(String requestURI) {
-        // 这里添加允许匿名访问的URL
+        // ここに匿名アクセスを許可するURLを追加
         return requestURI.equals("/api/auth/logout") ||
                 requestURI.equals("/auth/logout") ||
                 requestURI.equals("/api/auth/register") ||
@@ -129,20 +129,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 发送错误响应
+     * エラーレスポンスを送信
      */
     private void sendErrorResponse(HttpServletResponse response, int code, String message) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 设置 HTTP 状态码为 401
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // HTTPステータスコードを401に設定
 
-        // 构建错误响应体
+        // エラーレスポンスボディを構築
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("code", code);
         errorResponse.put("msg", message);
         errorResponse.put("success", false);
         errorResponse.put("timestamp", LocalDateTime.now().toString());
 
-        // 写回响应
+        // レスポンスを書き戻す
         String jsonResponse = objectMapper.writeValueAsString(errorResponse);
         response.getWriter().write(jsonResponse);
         response.getWriter().flush();

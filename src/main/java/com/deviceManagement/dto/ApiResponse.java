@@ -6,8 +6,8 @@ import lombok.Data;
 
 
 /**
- * 统一API响应结果类（与ResultCode枚举绑定，完全匹配API规范）
- * @param <T> 响应数据类型（登录成功时为LoginData，登出/错误时为Void）
+ * 統一APIレスポンス結果クラス（ResultCode列挙型にバインド、API仕様に完全一致）
+ * @param <T> レスポンスデータタイプ（ログイン成功時はLoginData、ログアウト/エラー時はVoid）
  */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -23,8 +23,8 @@ public class ApiResponse<T> {
     }
 
     /**
-     * 通用成功响应
-     * @param data 响应数据
+     * 共通成功レスポンス
+     * @param data レスポンスデータ
      * @return Result<T>
      */
     public static <T> ApiResponse<T> success(T data) {

@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 
 public class LoginRequest {
     @NotBlank(message = "社員番号は必須です。")
-    private String userId;          // 明文
+    private String userId;
 
     @NotBlank(message = "パスワード（暗号化）は必須です")
-    private String password;        // 密文
+    private String password;
 }

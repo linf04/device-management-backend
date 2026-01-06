@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-    /** 共通解密工具 */
+    /** 共通復号ツール */
     private void decryptPasswordFields(Object dto) {
         try {
             if (dto instanceof LoginRequest req) {

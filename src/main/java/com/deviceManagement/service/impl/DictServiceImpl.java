@@ -68,13 +68,4 @@ public class DictServiceImpl implements DictService {
             return ApiResponse.error(ApiResponseCode.SYSTEM_ERROR, "システムエラーが発生しました");
         }
     }
-
-    /*    @Override
-    public Result<DictResponse> getDictItemsByTypeCode(String dictTypeCode) {
-        return Result.success(new DictResponse(ResultCode.SUCCESS.getCode(),
-                        ResultCode.SUCCESS.getMessage(),List.of(new DictItemDTO(1L,"使用可",1),new DictItemDTO(2L,
-                        "使用不可",2))));
-    }
-    */
-
 }

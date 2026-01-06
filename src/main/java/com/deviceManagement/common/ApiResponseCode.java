@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 响应状态码枚举
+ * レスポンスステータスコード列挙型
  */
 @Getter
 @AllArgsConstructor
