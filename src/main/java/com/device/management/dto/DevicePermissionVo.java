@@ -4,44 +4,45 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Data
 @AllArgsConstructor
-public class DevicePermissionExcelVo {
-
+public class DevicePermissionVo {
     // 设备信息[java.lang.Long, java.lang.String, java.lang.Object,
     // java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String,
     // java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String,
     // java.lang.Long, java.lang.String,
     // java.time.LocalDate, java.lang.Long, java.lang.String, java.lang.String], and not every argument has an alias)
+    private String PermissionId;
+    private String deviceId;
+    private Object monitorName;
+    private String computerName;
+    private Object ipAddress;
 
-    private Long number;           // 编号
-    private String deviceId;      // 设备编号
-    private Object monitorName;     // 显示器
-    private String computerName;      // 电脑名
-    private Object ipAddress;         // IP地址（可能有多个）
+    // 使用者信息
+    private String jobNumber;
+    private String name;
+    private String deptId;
+    private String loginUsername;
 
-    private String jobNumber;        // 工号
-    private String name;      // 姓名
-    private String deptId;    // 部门代码
-    private String loginUsername;     // 登录用户名
+    // 域信息
+    private Long domainStatusId;
+    private String domainGroup;
+    private String noDomainReason;
 
-    private Long domainStatusId;            // 域名
-    private String domainGroup;       // 域内组名
-    private String noDomainReason;    // 不加域理由
+    // SmartIT信息
+    private Long smartitStatusId;
+    private String noSmartitReason;
 
-    private Long smartitStatusId;     // SmartIT状态
-    private String noSmartitReason;   // 不安装SmartIT理由
+    // USB信息
+    private Long usbStatusId;
+    private String usbReason;
+    private LocalDate useExpireDate;
 
-    private Long usbStatusId;         // USB状态
-    private String usbReason;     // USB开通理由
-    private LocalDate useExpireDate;         // 使用截止日期
-
-    private Long antivirusStatusId;  // 连接状态
-    private String noSymantecReason;  // 无Symantec理由
-    private String remark;            // 备注
-
+    // 其他
+    private Long antivirusStatusId;
+    private String noSymantecReason;
+    private String remark;
 }
 
 

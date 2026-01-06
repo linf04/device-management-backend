@@ -1,22 +1,23 @@
 package com.device.management.service;
 
 import com.device.management.dto.ApiResponse;
-
+import com.device.management.dto.DevicePermissionVo;
 import com.device.management.dto.PermissionsDTO;
 import com.device.management.entity.DeviceInfo;
 import com.device.management.entity.DevicePermission;
-import com.device.management.entity.User;
+import com.device.management.entity.Dict;
 import com.device.management.exception.BusinessException;
 import com.device.management.repository.DevicePermissionRepository;
 import com.device.management.repository.DeviceRepository;
 import com.device.management.repository.DictRepository;
 import com.device.management.security.JwtTokenProvider;
 import jakarta.annotation.Resource;
-
-import java.util.UUID;
-import java.time.Instant;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.UUID;
 
 
 @Service
@@ -24,67 +25,104 @@ public class DevicePermissionService {
     @Resource
     DevicePermissionRepository devicePermissionRepository;
     @Resource
+    DeviceRepository deviceRepository;
+    @Resource
     private JwtTokenProvider jwtTokenProvider;
     @Resource
     private DictRepository dictRepository;
-    @Resource
-    DeviceRepository deviceRepository;
 
-    public ApiResponse<List<PermissionsDTO>> getPermissions(Integer page, Integer size, User user, DeviceInfo deviceInfo, String permissionInfo) {
-        return null;
+    public DevicePermissionVo getPermissionVoByPermissionId(String permissionId) {
+        DevicePermissionVo devicePermissionVo = devicePermissionRepository.findPermissionVoByPermissionId(permissionId);
+        if (devicePermissionVo == null) {
+            throw new BusinessException(30003, "没有找到该权限信息");
+        }
+        return devicePermissionVo;
     }
 
-    public ApiResponse<PermissionsDTO> addPermissions(PermissionsDTO permissionsDTO) {
-        DeviceInfo deviceInfo =   deviceRepository.findByDeviceId(permissionsDTO.getDeviceId());
+    public Page<DevicePermissionVo> getPermissions(Pageable pageable) {
+        return devicePermissionRepository.findAllDevicePermissionVo(pageable);
+    }
+
+    public PermissionsDTO addPermissions(PermissionsDTO permissionsDTO) {
+
+
+        DeviceInfo deviceInfo = deviceRepository.findByDeviceId(permissionsDTO.getDeviceId());
         if (deviceInfo == null) {
-            throw new BusinessException(30001,"设备不存在");
+            throw new BusinessException(30001, "设备不存在");
         }
 
         DevicePermission devicePermissions = devicePermissionRepository.findDevicePermissionsByDevice(deviceInfo);
 
         if (devicePermissions != null) {
-            throw new BusinessException(30002,"设备已存在权限信息");
+            throw new BusinessException(30002, "设备已存在权限信息");
         }
 
-        devicePermissionRepository.save(DevicePermission.builder()
-                .permissionId(UUID.randomUUID().toString())
-                .device(deviceInfo)
-                .domainStatus(
-                        dictRepository.findByDictTypeCodeAndSort("DOMAIN_STATUS",permissionsDTO.getDomainStatus())
-                )
-                .domainGroup(permissionsDTO.getDomainGroup())
-                .noDomainReason(permissionsDTO.getNoDomainReason())
-                .smartitStatus(
-                        dictRepository.findByDictTypeCodeAndSort("SMARTIT_STATUS",permissionsDTO.getDomainStatus())
-                )
-                .noSmartitReason(permissionsDTO.getNoSmartitReason())
-                .usbStatus(
-                        dictRepository.findByDictTypeCodeAndSort("USB_STATUS",permissionsDTO.getDomainStatus())
-                )
-                .usbReason(permissionsDTO.getUsbReason())
-                .usbExpireDate(permissionsDTO.getUsbExpireDate())
-                .antivirusStatus(
-                        dictRepository.findByDictTypeCodeAndSort("ANTIVIRUS_STATUS",permissionsDTO.getDomainStatus())
-                )
-                .noSymantecReason(permissionsDTO.getNoSymantecReason())
-                .remark(permissionsDTO.getRemark())
-                .createTime(Instant.now())
+        devicePermissionRepository.save(DevicePermission.builder().permissionId(UUID.randomUUID().toString()).device(deviceInfo).domainStatus(Dict.builder().id(permissionsDTO.getDomainStatus()).build()).domainGroup(permissionsDTO.getDomainGroup()).noDomainReason(permissionsDTO.getNoDomainReason()).smartitStatus(Dict.builder().id(permissionsDTO.getSmartitStatus()).build()).noSmartitReason(permissionsDTO.getNoSmartitReason()).usbStatus(Dict.builder().id(permissionsDTO.getUsbStatus()).build()).usbReason(permissionsDTO.getUsbReason()).usbExpireDate(permissionsDTO.getUsbExpireDate()).antivirusStatus(Dict.builder().id(permissionsDTO.getAntivirusStatus()).build()).noSymantecReason(permissionsDTO.getNoSymantecReason()).remark(permissionsDTO.getRemark()).createTime(Instant.now())
 //                        .creater(jwtTokenProvider.getUserIdFromToken("eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJKUzIxMTUiLCJzdWIiOiJKUzIxMTUiLCJpYXQiOjE3Njc1OTE4NzgsImV4cCI6MTc2NzY3ODI3OH0.FV_jjUTSWvYEeTYgFtb2iPkalIz48NK_2lTgi-HtWVk"))
-                .creater("JS2115")
-                .updateTime(Instant.now())
+                .creater("JS2115").updateTime(Instant.now())
 //                        .updater(jwtTokenProvider.getUserIdFromToken("eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJKUzIxMTUiLCJzdWIiOiJKUzIxMTUiLCJpYXQiOjE3Njc1OTE4NzgsImV4cCI6MTc2NzY3ODI3OH0.FV_jjUTSWvYEeTYgFtb2iPkalIz48NK_2lTgi-HtWVk"))
-                .updater("JS2115")
-                .build());
+                .updater("JS2115").build());
 
-        return ApiResponse.success("添加成功",permissionsDTO);
+        return permissionsDTO;
     }
 
-    public ApiResponse<PermissionsDTO> updatePermissions(PermissionsDTO permissionsDTO) {
-        return null;
+    public PermissionsDTO updatePermissions(PermissionsDTO permissionsDTO) {
+        if (permissionsDTO.getPermissionId().isEmpty()) {
+            throw new BusinessException(30005, "权限ID不能为空");
+        }
+        DevicePermission devicePermission = devicePermissionRepository.findDevicePermissionByPermissionId(permissionsDTO.getPermissionId());
+        if (permissionsDTO.getDomainStatus() != null) {
+            devicePermission.setDomainStatus(Dict.builder().id(permissionsDTO.getDomainStatus()).build());
+        }
+        if (permissionsDTO.getDomainGroup() != null) {
+            devicePermission.setDomainGroup(permissionsDTO.getDomainGroup());
+        }
+        if (permissionsDTO.getNoDomainReason() != null) {
+            devicePermission.setNoDomainReason(permissionsDTO.getNoDomainReason());
+        }
+        if (permissionsDTO.getSmartitStatus() != null) {
+            devicePermission.setSmartitStatus(Dict.builder().id(permissionsDTO.getSmartitStatus()).build());
+        }
+        if (permissionsDTO.getNoSmartitReason() != null) {
+            devicePermission.setNoSmartitReason(permissionsDTO.getNoSmartitReason());
+        }
+        if (permissionsDTO.getUsbStatus() != null) {
+            devicePermission.setUsbStatus(Dict.builder().id(permissionsDTO.getUsbStatus()).build());
+        }
+        if (permissionsDTO.getUsbReason() != null) {
+            devicePermission.setUsbReason(permissionsDTO.getUsbReason());
+        }
+        if (permissionsDTO.getUsbExpireDate() != null) {
+            devicePermission.setUsbExpireDate(permissionsDTO.getUsbExpireDate());
+        }
+        if (permissionsDTO.getAntivirusStatus() != null) {
+            devicePermission.setAntivirusStatus(Dict.builder().id(permissionsDTO.getAntivirusStatus()).build());
+        }
+        if (permissionsDTO.getNoSymantecReason() != null) {
+            devicePermission.setNoSymantecReason(permissionsDTO.getNoSymantecReason());
+        }
+        if (permissionsDTO.getRemark() != null) {
+            devicePermission.setRemark(permissionsDTO.getRemark());
+        }
+
+        devicePermission.setUpdater("JS2115");
+        devicePermission.setUpdateTime(Instant.now());
+
+        try {
+            devicePermissionRepository.save(devicePermission);
+        } catch (Exception e) {
+            throw new BusinessException(30006, e.getMessage());
+        }
+        return permissionsDTO;
     }
 
-    public ApiResponse<Void> deletePermissions(String id) {
-        return null;
+    public String deletePermissions(String id) {
+        DevicePermission devicePermission = devicePermissionRepository.findDevicePermissionByPermissionId(id);
+        if (devicePermission == null) {
+            throw new BusinessException(30007, "没有找到该权限信息");
+        }
+        devicePermissionRepository.delete(devicePermission);
+        return id;
     }
 }
 

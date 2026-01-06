@@ -6,12 +6,12 @@ import com.device.management.repository.DevicePermissionRepository;
 import com.device.management.repository.DictRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -21,32 +21,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 @Service
 public class DevicePermissionExcelService {
-    private Map<Long, String> dictCache;
-    @Resource
-    private DictRepository dictRepository;
-
-    @Resource
-    DevicePermissionRepository devicePermissionRepository;
-    @PostConstruct
-    public void initDictCache() {
-        List<Dict> dictList = dictRepository.findAll();
-        dictCache = new HashMap<>();
-        for (Dict dict : dictList) {
-            Long key = dict.getId();
-            dictCache.put(key, dict.getDictItemName());
-        }
-    }
-
-    // 提供编码转名称的工具方法
-    private String getDictName(Long key) {
-        return dictCache.get(key);
-    }
-
     // 定义列宽（字符数）
-    private static final int[] COLUMN_WIDTHS = {
-            8,   //编号
+    private static final int[] COLUMN_WIDTHS = {8,   //编号
             30,  //设备编号
             20,  //电脑名
             20,  //显示器
@@ -67,12 +46,31 @@ public class DevicePermissionExcelService {
             20,  //无Symantec理由
             30   //备注
     };
+    @Resource
+    DevicePermissionRepository devicePermissionRepository;
+    private Map<Long, String> dictCache;
+    @Resource
+    private DictRepository dictRepository;
+
+    @PostConstruct
+    public void initDictCache() {
+        List<Dict> dictList = dictRepository.findAll();
+        dictCache = new HashMap<>();
+        for (Dict dict : dictList) {
+            Long key = dict.getId();
+            dictCache.put(key, dict.getDictItemName());
+        }
+    }
+
+    // 提供编码转名称的工具方法
+    private String getDictName(Long key) {
+        return dictCache.get(key);
+    }
 
     /**
      * 导出设备使用权限清单
      */
-    public void exportDevicePermissionList(List<DevicePermissionExcelVo> dataList,
-                                           HttpServletResponse response) throws IOException {
+    public void exportDevicePermissionList(List<DevicePermissionExcelVo> dataList, HttpServletResponse response) throws IOException {
         // 创建工作簿
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("设备使用权限清单");
@@ -87,11 +85,9 @@ public class DevicePermissionExcelService {
         int currentRow = buildExcelTemplate(sheet, styles, dataList);
 
         // 设置响应头
-        String fileName = "设备使用权限清单_" +
-                new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";
+        String fileName = "设备使用权限清单_" + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition",
-                "attachment; filename=\"" + URLEncoder.encode(fileName, StandardCharsets.UTF_8) + "\"");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(fileName, StandardCharsets.UTF_8) + "\"");
 
         // 写入输出流
         workbook.write(response.getOutputStream());
@@ -185,8 +181,7 @@ public class DevicePermissionExcelService {
     /**
      * 构建Excel模板
      */
-    private int buildExcelTemplate(Sheet sheet, Map<String, CellStyle> styles,
-                                   List<DevicePermissionExcelVo> dataList) {
+    private int buildExcelTemplate(Sheet sheet, Map<String, CellStyle> styles, List<DevicePermissionExcelVo> dataList) {
         int rowNum = 0;
 
         // 第一行：编号信息
@@ -226,11 +221,7 @@ public class DevicePermissionExcelService {
 
         // 第七行：详细表头
         Row row6 = sheet.createRow(rowNum++);
-        String[] headers = {
-                "", "设备编号", "电脑名","显示器", "IP地址", "工号", "姓名", "级别", "登录用户名",
-                "域名", "域内组名", "不加域理由", "SmartIT状态", "不安装SmartIT理由",
-                "USB状态", "USB开通理由", "使用截止日期", "连接状态", "无Symantec理由", ""
-        };
+        String[] headers = {"", "设备编号", "电脑名", "显示器", "IP地址", "工号", "姓名", "级别", "登录用户名", "域名", "域内组名", "不加域理由", "SmartIT状态", "不安装SmartIT理由", "USB状态", "USB开通理由", "使用截止日期", "连接状态", "无Symantec理由", ""};
 
         for (int i = 0; i < headers.length; i++) {
             Cell cell = row6.createCell(i);
@@ -247,8 +238,7 @@ public class DevicePermissionExcelService {
     /**
      * 填充数据行
      */
-    private int fillDataRows(Sheet sheet, Map<String, CellStyle> styles,
-                             List<DevicePermissionExcelVo> dataList, int startRow) {
+    private int fillDataRows(Sheet sheet, Map<String, CellStyle> styles, List<DevicePermissionExcelVo> dataList, int startRow) {
         int rowNum = startRow;
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -277,14 +267,13 @@ public class DevicePermissionExcelService {
             createCell(row, 11, item.getNoDomainReason(), styles.get("data"));
 
             // SmartIT信息
-            createCell(row, 12,getDictName(item.getSmartitStatusId()), styles.get("center"));
+            createCell(row, 12, getDictName(item.getSmartitStatusId()), styles.get("center"));
             createCell(row, 13, item.getNoSmartitReason(), styles.get("data"));
 
             // USB信息
             createCell(row, 14, getDictName(item.getUsbStatusId()), styles.get("center"));
             createCell(row, 15, item.getUsbReason(), styles.get("data"));
-            createCell(row, 16, item.getUseExpireDate() != null
-                    ? item.getUseExpireDate().format(dateFormatter)  // LocalDate 直接调用 format 方法
+            createCell(row, 16, item.getUseExpireDate() != null ? item.getUseExpireDate().format(dateFormatter)  // LocalDate 直接调用 format 方法
                     : "", styles.get("date"));
 
             // 其他信息
@@ -351,11 +340,9 @@ public class DevicePermissionExcelService {
     /**
      * 创建合并单元格
      */
-    private void createMergedCell(Sheet sheet, Row row, int firstCol, int lastCol,
-                                  String value, CellStyle style) {
+    private void createMergedCell(Sheet sheet, Row row, int firstCol, int lastCol, String value, CellStyle style) {
         if (firstCol < lastCol) {
-            sheet.addMergedRegion(new CellRangeAddress(row.getRowNum(), row.getRowNum(),
-                    firstCol, lastCol));
+            sheet.addMergedRegion(new CellRangeAddress(row.getRowNum(), row.getRowNum(), firstCol, lastCol));
         }
         Cell cell = row.createCell(firstCol);
         cell.setCellValue(value);
@@ -379,4 +366,6 @@ public class DevicePermissionExcelService {
         return devicePermissionRepository.findAllDevicePermissionExcel();
 
     }
+
+
 }

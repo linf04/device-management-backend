@@ -16,23 +16,23 @@ public class PermissionsDTO {
 
     private String deviceId;
 
-    private int domainStatus;
+    private Long domainStatus;
 
     private String domainGroup;
 
     private String noDomainReason;
 
-    private int smartitStatus;
+    private Long smartitStatus;
 
     private String noSmartitReason;
 
-    private int usbStatus;
+    private Long usbStatus;
 
     private String usbReason;
 
     private LocalDate usbExpireDate;
 
-    private int antivirusStatus;
+    private Long antivirusStatus;
 
     private String noSymantecReason;
 

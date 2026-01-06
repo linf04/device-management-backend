@@ -1,5 +1,6 @@
 package com.device.management.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * API 响应包装类
+ * APIレスポンスラッパークラス
  */
 @Data
 @NoArgsConstructor
@@ -15,9 +16,17 @@ import java.util.List;
 public class ApiResponse<T> {
     private int code;
     private String message;
+//    private T data;
+//    private Long total;
+//    private Integer page;
+//    private Integer size;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private T data;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long total;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer page;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer size;
 
     public ApiResponse(int code, String message, T data) {
