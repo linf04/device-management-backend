@@ -61,6 +61,7 @@ public class DeviceService {
      * @param response HTTPレスポンス
      */
     public void exportDevicesToExcel(HttpServletResponse response) {
+
         List<Device> devices = deviceRepository.findAll();
         log.info("Exporting {} devices to Excel", devices.size());
 
