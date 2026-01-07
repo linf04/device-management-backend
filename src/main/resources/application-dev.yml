@@ -1,17 +1,15 @@
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/device_management_dev
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://pgm-uf6ixk92991xy2o5eo.rwlb.rds.aliyuncs.com:5432/postgres
+    username: root_2025
+    password: 10235As##
 
-server:
-  port: 8080
+  sql:
+    init:
+      mode: never
 
-logging:
-  level:
-    root: INFO
-    com.device: DEBUG
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
