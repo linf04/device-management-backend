@@ -21,10 +21,10 @@ public class JwtTokenProvider {
     private final RedisTemplate<String, String> redisTemplate;
 
     @Value("${jwt.secret}")
-    private String secretKey;
+    private String jwtSecret;
 
     @Value("${jwt.expiration}")
-    private long expirationTime;
+    private long jwtExpirationMs;
 
     // Redisブラックリストキープレフィックス
     private static final String TOKEN_BLACKLIST_PREFIX = "jwt:blacklist:";
@@ -40,7 +40,7 @@ public class JwtTokenProvider {
             synchronized (this) {
                 if (cachedSecretKey == null) {
                     try {
-                        byte[] keyBytes = Decoders.BASE64URL.decode(secretKey);
+                        byte[] keyBytes = Decoders.BASE64URL.decode(jwtSecret);
                         if (keyBytes.length < 32) {
                             throw new IllegalStateException("鍵の長さが不足しています。HS256アルゴリズムは少なくとも32バイト必要です");
                         }
@@ -65,12 +65,12 @@ public class JwtTokenProvider {
         if (userTypeId == null) {
             throw new IllegalArgumentException("ユーザータイプIDは空にできません");
         }
-        if (expirationTime <= 0) {
+        if (jwtExpirationMs <= 0) {
             throw new IllegalStateException("Tokenの有効期限は0より大きくなければなりません");
         }
 
         Date now = new Date();
-        Date expirationDate = new Date(now.getTime() + expirationTime);
+        Date expirationDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
                 .setSubject(userId.trim())
@@ -95,12 +95,6 @@ public class JwtTokenProvider {
         if (isTokenBlacklisted(token)) {
             throw new JwtException("トークンは既に取り消されています");
         }
-
-/*        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();*/
 
         return Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -143,6 +137,30 @@ public class JwtTokenProvider {
         } catch (JwtException e) {
             log.warn("Token検証に失敗しました：{}", e.getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Tokenの全てのクレームを取得
+     */
+    public Claims getAllClaimsFromToken(String token) {
+        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        return Jwts.parser()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    /**
+     * Tokenの有効期限が切れていますか
+     */
+    public boolean isTokenExpired(String token) {
+        try {
+            Claims claims = getAllClaimsFromToken(token);
+            return claims.getExpiration().before(new Date());
+        } catch (Exception e) {
+            return true;
         }
     }
 
