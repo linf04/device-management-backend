@@ -60,3 +60,55 @@
 //        return http.build();
 //    }
 //}
+/**
+ * Spring Security 配置
+ */
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    /**
+     * 密码编码器
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * 认证管理器
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    /**
+     * JWT 认证过滤器
+     */
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter();
+    }
+
+    /**
+     * 安全过滤链
+     */
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/login", "/auth/logout").permitAll()
+                        //エクスポート用インターフェースを開放（テスト用）
+                        .requestMatchers("/api/devices/export/excel").permitAll()
+                        .requestMatchers("/api/devices/test").permitAll()
+                        // デバイス削除インターフェースを開放
+                        .requestMatchers("/api/devices/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+}
