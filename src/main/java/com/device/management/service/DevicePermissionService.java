@@ -53,7 +53,7 @@ public class DevicePermissionService {
         }
 
         // 构建分页对象，按权限编号排列
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "permissionId"));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "permissionId"));
 
         // 构建查询条件
         Specification<DevicePermission> spec = buildQuerySpecification(user, deviceInfo);
