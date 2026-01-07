@@ -21,34 +21,6 @@ import java.util.List;
 public class User {
 
     @Id
-    @Column(name = "USER_ID", length = 50)
-    private String userId;
-
-    @Column(name = "dept_id", length = 50, nullable = false)
-    private String deptId;
-
-    @Column(name = "name", length = 100, nullable = false)
-    private String name;
-
-    @Column(name = "user_type_id", nullable = false)
-    private Integer userTypeId;
-
-    @Column(name = "password", length = 255, nullable = false)
-    private String password;
-
-    @CreationTimestamp
-    @Column(name = "create_time")
-    private LocalDateTime createTime;
-
-    @Column(name = "creater", length = 100)
-    private String creater;
-
-    @UpdateTimestamp
-    @Column(name = "update_time")
-    private LocalDateTime updateTime;
-
-    @Column(name = "updater", length = 100)
-    private String updater;
     @Column(name = "user_id", length = 50)
     private String userId; // ユーザID（プライマリキー）
 

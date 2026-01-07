@@ -10,15 +10,30 @@ import com.device.management.repository.DeviceIpRepository;
 import com.device.management.repository.DeviceRepository;
 import com.device.management.repository.MonitorRepository;
 import com.device.management.repository.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-
+/**
+ * デバイスサービスクラス
+ * デバイス関連のビジネスロジックを処理
+ */
+@Slf4j
 @Service
 public class DeviceService {
 
@@ -33,6 +48,9 @@ public class DeviceService {
 
     @Autowired
     private DeviceIpRepository deviceIpRepository;
+
+    private static final DateTimeFormatter DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
     @Transactional
     public DeviceFullDTO insertDevice(DeviceFullDTO deviceFullDTO){
@@ -69,7 +87,7 @@ public class DeviceService {
 
             User user = convertUserToEntity(userDTO);
             user.setPassword("123");
-            user.setUserTypeId(1);
+            user.setUserTypeId(1L);
 
             user.setCreateTime(LocalDateTime.now());
             user.setUpdateTime(LocalDateTime.now());
@@ -132,31 +150,9 @@ public class DeviceService {
     }
 
 
-
-
-//    public DeviceDTO insertDevice(DeviceDTO deviceDTO){
-//
-//        List<Device> deviceList = deviceRepository.findByDeviceId(deviceDTO.getDeviceId());
-//
-//        if(!CollectionUtils.isEmpty(deviceList)) { // 設備の存在
-//            throw new IllegalStateException("device:" + deviceDTO.getDeviceId() + "exist.");
-//        }
-//
-//        Device device = convertDeviceToEntity(deviceDTO);
-//        device.setCreateTime(LocalDateTime.now()); // 作成時刻の設定
-//        device.setUpdateTime(LocalDateTime.now()); // 更新日時の設定
-//
-//
-//        Device device1 = deviceRepository.save(device); // 保存された設備に戻る
-//
-//        return convertDeviceToDTO(device1); //設備DTOを返す
-//    }
-
-
     @Transactional
     public DeviceFullDTO updateDeviceById(String deviceId, DeviceFullDTO deviceFullDTO) {
 
-//        System.out.println("!!!!!!!!!!!!" + deviceFullDTO + "!!!!!!!!!!!!");
 
         deviceFullDTO.setDeviceId(deviceId); // 渡されたパラメータのdeviceIdの後ろに使用されます
 
@@ -292,57 +288,6 @@ public class DeviceService {
     }
 
 
-
-
-
-//    @Transactional
-//    public DeviceDTO updateDeviceById(String deviceId, DeviceDTO deviceDTO) {
-//
-//        // 機器が存在しない場合、異常を投げる
-//        Device deviceDB = deviceRepository.findById(deviceId).orElseThrow(() -> new IllegalArgumentException("device:" + deviceId + "not exist."));
-//
-////        if(StringUtils.hasLength(deviceDTO.getComputerName()) && !deviceDB.getComputerName().equals(deviceDTO.getComputerName())){
-////            deviceDB.setComputerName(deviceDTO.getComputerName());
-////        }
-//
-//        deviceDTO.setUpdateTime(LocalDateTime.now()); // 更新日時の設定
-//
-    ////        System.out.println(deviceDTO);
-//
-//        // 更新アクション
-//        deviceRepository.updateDevice(
-//                deviceId,
-//                deviceDTO.getDeviceModel(),
-//                deviceDTO.getComputerName(),
-//                deviceDTO.getLoginUsername(),
-//                deviceDTO.getProject(),
-//                deviceDTO.getDevRoom(),
-//                deviceDTO.getUserId(),
-//                deviceDTO.getRemark(),
-//                deviceDTO.getSelfConfirmId(),
-//                deviceDTO.getOsId(),
-//                deviceDTO.getMemoryId(),
-//                deviceDTO.getSsdId(),
-//                deviceDTO.getHddId(),
-//                deviceDTO.getUpdateTime(),
-//                deviceDTO.getUpdater()
-//        );
-//
-//        /***
-//         * JPAのL 1キャッシュの問題で、ここで返されるデータはキャッシュから取得した上のdeviceDBのデータであり、
-//         * repositoryの@Modifying注記に@Modifying（clearAutomatically=true、flushAutomatically=true）を追加する必要があります。
-//         * キャッシュをクリアして、新しいデータを取得できます
-//         */
-//
-//        // 更新されたデータを返す
-//        Device updatedDevice = deviceRepository.findById(deviceId).orElseThrow(() -> new IllegalStateException("device:" + deviceId + "not exist."));
-//
-//        return convertDeviceToDTO(updatedDevice);
-//    }
-
-
-
-
     // UserDTO 回転 User
     private User convertUserToEntity(UserDTO dto) {
         User user = new User();
@@ -469,36 +414,6 @@ public class DeviceService {
                 .build();
     }
 
-}
-import com.device.management.repository.DeviceRepository;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
-/**
- * デバイスサービスクラス
- * デバイス関連のビジネスロジックを処理
- */
-@Slf4j
-@Service
-public class DeviceService {
-
-    private final DeviceRepository deviceRepository;
-
-    private static final DateTimeFormatter DATE_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
     /**
      * コンストラクタ

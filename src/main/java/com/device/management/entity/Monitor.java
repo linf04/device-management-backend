@@ -26,9 +26,6 @@ public class Monitor {
     // device:monitor（1:n）
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "device_id", referencedColumnName = "device_id", insertable = false, updatable = false)
-    // device:monitor（1:n）
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "device_id", referencedColumnName = "device_id")
     private Device device;//機器番号（外部キー）
 
     @Column(name = "create_time", columnDefinition = "timestamp")

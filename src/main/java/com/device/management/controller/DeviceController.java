@@ -3,15 +3,21 @@ package com.device.management.controller;
 
 
 import com.device.management.dto.ApiResponse;
-import com.device.management.dto.DeviceDTO;
 import com.device.management.dto.DeviceFullDTO;
 import com.device.management.service.DeviceService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.annotation.*;
 
+
+@Slf4j
 @RestController
-@RequestMapping("/devices")
+@RequestMapping("/api/devices")
+@RequiredArgsConstructor
 public class DeviceController {
 
     @Autowired
@@ -23,7 +29,6 @@ public class DeviceController {
         return ResponseEntity.ok(ApiResponse.success("getテスト成功"));
     }
 
-
     @PostMapping("/insertDevice")
     public ResponseEntity<ApiResponse<DeviceFullDTO>> insertDevice(@RequestBody DeviceFullDTO deviceFullDTO){ //传入creator？
 
@@ -31,16 +36,6 @@ public class DeviceController {
 
         return ResponseEntity.ok(ApiResponse.success(deviceFullDTO1));
     }
-
-
-
-//    @PostMapping("/insertDevice")
-//    public ResponseEntity<ApiResponse<DeviceDTO>> insertDevice(@RequestBody DeviceDTO deviceDTO){ //传入creator？
-//
-//        DeviceDTO deviceDTO1 = deviceService.insertDevice(deviceDTO); //設備の挿入に成功しました
-//
-//        return ResponseEntity.ok(ApiResponse.success(deviceDTO1));
-//    }
 
     @PutMapping("/updateDevice/{id}")
     public ResponseEntity<ApiResponse<DeviceFullDTO>> updateDevice(@PathVariable String id, @RequestBody DeviceFullDTO deviceFullDTO){
@@ -51,34 +46,6 @@ public class DeviceController {
 
     }
 
-//    @PutMapping("/updateDevice/{id}")
-//    public ResponseEntity<ApiResponse<DeviceDTO>> updateDevice(@PathVariable String id, @RequestBody DeviceDTO deviceDTO){
-//
-//        DeviceDTO deviceDTO1 = deviceService.updateDeviceById(id, deviceDTO); //設備の挿入に成功しました
-//
-//        return ResponseEntity.ok(ApiResponse.success(deviceDTO1));
-//
-//    }
-
-import com.device.management.service.DeviceService;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-@Slf4j
-@RestController
-@RequestMapping("/api/devices")
-@RequiredArgsConstructor
-public class DeviceController {
-    private final DeviceService deviceService;
-
-    @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        log.info("测试端点被访问");
-        return ResponseEntity.ok("测试成功");
-    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDevice(@PathVariable String id) {
