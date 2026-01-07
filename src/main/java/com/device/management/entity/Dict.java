@@ -1,68 +1,51 @@
 package com.device.management.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
 @Entity
-@Table(name = "dict")
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Table(name = "dict", schema = "public")
 public class Dict {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "dict_id", nullable = false)
-    private Long id;
+    @Column(name = "dict_id")
+    private Long dictId;
 
-    @Size(max = 50)
-    @NotNull
-    @Column(name = "dict_type_code", nullable = false, length = 50)
+    @Column(name = "dict_type_code", length = 50, nullable = false)
     private String dictTypeCode;
 
-    @Size(max = 100)
-    @NotNull
-    @Column(name = "dict_type_name", nullable = false, length = 100)
+    @Column(name = "dict_type_name", length = 100, nullable = false)
     private String dictTypeName;
 
-    @Column(name = "dict_type_description", length = Integer.MAX_VALUE)
+    @Column(name = "dict_type_description", columnDefinition = "text")
     private String dictTypeDescription;
 
-    @Size(max = 100)
-    @NotNull
-    @Column(name = "dict_item_name", nullable = false, length = 100)
+    @Column(name = "dict_item_name", length = 100, nullable = false)
     private String dictItemName;
 
-    @ColumnDefault("0")
     @Column(name = "sort")
     private Integer sort;
 
-    @NotNull
-    @ColumnDefault("1")
     @Column(name = "is_enabled", nullable = false)
     private Short isEnabled;
 
-    @NotNull
-    @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "create_time", nullable = false)
-    private Instant createTime;
+    @CreationTimestamp
+    @Column(name = "create_time", updatable = false)
+    private LocalDateTime createTime;
 
-    @Size(max = 100)
     @Column(name = "creater", length = 100)
     private String creater;
 
-    @NotNull
-    @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "update_time", nullable = false)
-    private Instant updateTime;
+    @UpdateTimestamp
+    @Column(name = "update_time")
+    private LocalDateTime updateTime;
 
-    @Size(max = 100)
     @Column(name = "updater", length = 100)
     private String updater;
 }

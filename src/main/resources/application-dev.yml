@@ -4,9 +4,9 @@ spring:
       ddl-auto: create-drop
     show-sql: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/device
+    url: jdbc:postgresql://localhost:5432/device_management_dev
     username: postgres
-    password: 12312300
+    password: postgres
 
 server:
   port: 8080

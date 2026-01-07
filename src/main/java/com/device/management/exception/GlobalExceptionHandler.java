@@ -50,17 +50,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
-    /*
-    * 业务异常
-    * */
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<String>> handleBusinessException(
-            BusinessException ex, WebRequest request) {
-        log.error("Business error: {}", ex.getMessage());
-        ApiResponse<String> response = ApiResponse.error(ex.getCode(), ex.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
-
     /**
      * 处理所有其他异常
      */

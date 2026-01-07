@@ -1,66 +1,53 @@
 package com.device.management.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@Entity
-@Table(name = "users")
-@Builder
-@AllArgsConstructor
+/**
+ * 用户实体类
+ */
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "users", schema = "public")
 public class User {
+
     @Id
-    @Size(max = 50)
-    @Column(name = "user_id", nullable = false, length = 50)
+    @Column(name = "user_id", length = 50, nullable = false)
     private String userId;
 
-    @Size(max = 50)
-    @NotNull
-    @Column(name = "dept_id", nullable = false, length = 50)
+    @Column(name = "dept_id", length = 50, nullable = false)
     private String deptId;
 
-    @Size(max = 100)
-    @NotNull
-    @Column(name = "name", nullable = false, length = 100)
+    @Column(name = "name", length = 100, nullable = false)
     private String name;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "user_type_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "user_type_id", referencedColumnName = "dict_id")
     private Dict userType;
 
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "password", nullable = false)
+    @Column(name = "password", length = 255, nullable = false)
     private String password;
 
-    @NotNull
-    @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "create_time", nullable = false)
-    private Instant createTime;
+    @CreationTimestamp
+    @Column(name = "create_time", updatable = false)
+    private LocalDateTime createTime;
 
-    @Size(max = 100)
     @Column(name = "creater", length = 100)
     private String creater;
 
-    @NotNull
-    @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "update_time", nullable = false)
-    private Instant updateTime;
+    @UpdateTimestamp
+    @Column(name = "update_time")
+    private LocalDateTime updateTime;
 
-    @Size(max = 100)
     @Column(name = "updater", length = 100)
     private String updater;
-
 
 }

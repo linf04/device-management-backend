@@ -1,20 +1,15 @@
 package com.device.management.repository;
 
-import jakarta.validation.constraints.Size;
+import com.device.management.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.repository.query.QueryByExampleExecutor;
 import org.springframework.stereotype.Repository;
 
-import com.device.management.entity.User;
+import java.util.Optional;
 
-import java.util.List;
-
+/**
+ * 用户 Repository
+ */
 @Repository
-public interface UserRepository extends
-        JpaRepository<User, Long>,
-        JpaSpecificationExecutor<User>,
-        QueryByExampleExecutor<User> {
-    User findByUserId(String userId);
-
+public interface UserRepository extends JpaRepository<User, String> {
+    Optional<User> findByUserId(String userId);
 }

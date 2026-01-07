@@ -1,104 +1,80 @@
 package com.device.management.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.Instant;
-import java.util.List;
+import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
 @Entity
-@Table(name = "device_info")
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@Table(name = "device_info", schema = "public")
 public class DeviceInfo {
+
     @Id
-    @Size(max = 50)
-    @Column(name = "device_id", nullable = false, length = 50)
+    @Column(name = "device_id", length = 50, nullable = false)
     private String deviceId;
 
-    @Size(max = 100)
     @Column(name = "device_model", length = 100)
     private String deviceModel;
 
-    @Size(max = 100)
     @Column(name = "computer_name", length = 100)
     private String computerName;
 
-    @Size(max = 100)
     @Column(name = "login_username", length = 100)
     private String loginUsername;
 
-    @Size(max = 100)
     @Column(name = "project", length = 100)
     private String project;
 
-    @Size(max = 100)
     @Column(name = "dev_room", length = 100)
     private String devRoom;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.RESTRICT)
-    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "user_id")
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id",
+            foreignKey = @ForeignKey(name = "fk_device_user"))
     private User user;
 
-    @OneToOne(mappedBy = "device", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private DeviceIp deviceIp;
-
-    @Column(name = "remark", length = Integer.MAX_VALUE)
+    @Column(name = "remark", columnDefinition = "text")
     private String remark;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "self_confirm_id")
+    @ManyToOne
+    @JoinColumn(name = "self_confirm_id", referencedColumnName = "dict_id",
+            foreignKey = @ForeignKey(name = "fk_device_self_confirm"))
     private Dict selfConfirm;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "os_id")
+    @ManyToOne
+    @JoinColumn(name = "os_id", referencedColumnName = "dict_id",
+            foreignKey = @ForeignKey(name = "fk_device_os"))
     private Dict os;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "memory_id")
+    @ManyToOne
+    @JoinColumn(name = "memory_id", referencedColumnName = "dict_id",
+            foreignKey = @ForeignKey(name = "fk_device_memory"))
     private Dict memory;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "ssd_id")
+    @ManyToOne
+    @JoinColumn(name = "ssd_id", referencedColumnName = "dict_id",
+            foreignKey = @ForeignKey(name = "fk_device_ssd"))
     private Dict ssd;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "hdd_id")
+    @ManyToOne
+    @JoinColumn(name = "hdd_id", referencedColumnName = "dict_id",
+            foreignKey = @ForeignKey(name = "fk_device_hdd"))
     private Dict hdd;
 
-    @NotNull
-    @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "create_time", nullable = false)
-    private Instant createTime;
+    @CreationTimestamp
+    @Column(name = "create_time", updatable = false)
+    private LocalDateTime createTime;
 
-    @Size(max = 100)
     @Column(name = "creater", length = 100)
     private String creater;
 
-    @NotNull
-    @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "update_time", nullable = false)
-    private Instant updateTime;
+    @UpdateTimestamp
+    @Column(name = "update_time")
+    private LocalDateTime updateTime;
 
-    @Size(max = 100)
     @Column(name = "updater", length = 100)
     private String updater;
-
-
 }
