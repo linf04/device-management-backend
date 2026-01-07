@@ -1,5 +1,14 @@
 package com.device.management.entity;
 
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -38,6 +47,19 @@ public class Device {
     private String remark; //備考
 
     @Column(name = "self_confirm_id", columnDefinition = "bigint")
+    private Integer selfConfirmId; //本人確認ID
+
+    @Column(name = "os_id", columnDefinition = "bigint")
+    private Long osId; //OSID
+
+    @Column(name = "memory_id", columnDefinition = "bigint")
+    private Long memoryId; //メモリID
+
+    @Column(name = "ssd_id", columnDefinition = "bigint")
+    private Long ssdId; //SSDID
+
+    @Column(name = "hdd_id", columnDefinition = "bigint")
+    private Long hddId; //HDDID
     private Long selfConfirmId; //本人確認 ID
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -71,6 +93,7 @@ public class Device {
 
     @Column(name = "updater")
     private String updater; //更新者
+}
 
     /*// device:monitor（1:n）
     @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

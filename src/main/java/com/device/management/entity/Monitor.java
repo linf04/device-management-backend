@@ -20,6 +20,12 @@ public class Monitor {
     @Column(name = "monitor_name", nullable = false, length = 100)
     private String monitorName; // 'モニター名
 
+    @Column(name = "device_id", length = 50, nullable = false)
+    private String deviceId; //機器番号
+
+    // device:monitor（1:n）
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_id", referencedColumnName = "device_id", insertable = false, updatable = false)
     // device:monitor（1:n）
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "device_id", referencedColumnName = "device_id")

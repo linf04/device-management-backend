@@ -1,6 +1,5 @@
 package com.device.management.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +12,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DeviceDTO {
+public class DeviceFullDTO {
 
+    // device
     private String deviceId; //機器番号
     private String deviceModel; //ホストモデル
     private String computerName; //コンピュータ名
@@ -28,10 +28,19 @@ public class DeviceDTO {
     private Long memoryId; //メモリID
     private Long ssdId; //SSDID
     private Long hddId; //HDDID
-    private LocalDateTime createTime; //作成日時
     private String creater; //作成者
-    private LocalDateTime updateTime; //更新日時
-    private String updater; //更新者
+    private String updater; //更新者 update
 
+    // monitor
+    private String monitorName; // 'モニター名
+    private Integer monitorId; // モニター番号 update
+
+    //ip
+    private String ipAddress; //IPアドレス
+    private Integer ipId; //IP番号 update
+
+    // user
+    private String name;
+    private String deptId;
 
 }
