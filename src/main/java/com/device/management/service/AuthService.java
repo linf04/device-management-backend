@@ -32,11 +32,13 @@ public class AuthService {
      * 用户登录
      */
     public LoginResponse login(LoginRequest loginRequest) {
-        User user = userRepository.findByUserId(loginRequest.getUserId())
-                .orElseThrow(() -> new UnauthorizedException("用户名或密码不正确"));
+        User user = userRepository.findByUserId(loginRequest.getUserId());
+        if (user == null) {
+            throw new UnauthorizedException("用户名或密码不正确");
+        }
 
         // 验证密码
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new UnauthorizedException("用户名或密码不正确");
         }
 
@@ -60,11 +62,8 @@ public class AuthService {
     private UserDTO convertToDTO(User user) {
         UserDTO dto = new UserDTO();
         dto.setUserId(user.getUserId());
-        dto.setUserName(user.getUserName());
-        dto.setDepartmentCode(user.getDepartmentCode());
-        dto.setUserLevel(user.getUserLevel());
-        dto.setCreatedDate(user.getCreatedDate());
-        dto.setUpdatedDate(user.getUpdatedDate());
+        dto.setUserName(user.getUserId());
+        dto.setDepartmentCode(user.getDeptId());
         return dto;
     }
 }
