@@ -1,34 +1,108 @@
-HELP.md
+# 后端项目忽略文件
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Maven
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-
-### STS ###
-.apt_generated
 .classpath
-.factorypath
 .project
-.settings
-.springBeans
-.sts4-cache
+.settings/
+*.jar
+*.war
+*.zip
 
-### IntelliJ IDEA ###
-.idea
-*.iws
+# Gradle
+.gradle/
+build/
+*.class
+
+# Compiled source
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Package files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# OS
+Thumbs.db
+.DS_Store
+
+# IntelliJ specific files/directories
+out/
 *.iml
+*.iws
 *.ipr
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+# Compiled class file
+*.pyc
+__pycache__/
 
-### VS Code ###
+# JetBrains IDE
+*.idea/
+*.iml
+out/
+
+# VS Code
 .vscode/
-.run/DeviceManagementApplication.run.xml
+*.code-workspace
+
+# Linux
+*~
+.swp
+.swo
+
+# Windows
+.Thumbs.db
+ehthumbs.db
+
+# Mac
+.DS_Store
+
+# Node
+node_modules
+npm-debug.log
+dist
+
+# Misc
+*.orig
+
