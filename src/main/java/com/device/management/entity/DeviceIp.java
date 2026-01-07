@@ -8,15 +8,14 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name = "users", schema = "public")
-public class User{
+@Table(name = "device_ip", schema = "public")
+public class DeviceIp{
     @Id
-    private String userId;
+    private Integer ipId;
 
-    private String deptId;
-    private String name;
-    private String password;
-    private Long userTypeId;
+    @Column(unique = true)
+    private String ipAddress;
+    private String deviceId;
     private LocalDateTime createTime;
     private String creater;
     private LocalDateTime updateTime;
