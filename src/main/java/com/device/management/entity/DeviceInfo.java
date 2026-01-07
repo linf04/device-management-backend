@@ -9,6 +9,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -48,6 +49,10 @@ public class DeviceInfo {
     @OnDelete(action = OnDeleteAction.RESTRICT)
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "user_id")
     private User user;
+
+    @OneToOne(mappedBy = "device", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private DeviceIp deviceIp;
 
     @Column(name = "remark", length = Integer.MAX_VALUE)
     private String remark;

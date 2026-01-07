@@ -137,6 +137,7 @@ public class DevicePermissionService {
             dto.setUserId(permission.getDevice().getUser().getUserId());
             dto.setName(permission.getDevice().getUser().getName());
             dto.setDeptId(permission.getDevice().getUser().getDeptId());
+            dto.setIpAddress(permission.getDevice().getDeviceIp().getIpAddress());
 
         }
 
