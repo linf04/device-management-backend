@@ -10,10 +10,10 @@ import lombok.Data;
 @Data
 public class ChangePasswordRequest {
     @NotBlank
-    private String userId;          // 明文
+    private String userId;
 
     @NotBlank(message = "現在のパスワード（暗号化）は必須です")
-    private String currentPassword; // 密文
+    private String currentPassword;
 
     @NotBlank(message = "新しいパスワード（暗号化）は必須です")
     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
