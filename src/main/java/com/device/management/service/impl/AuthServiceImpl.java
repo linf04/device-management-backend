@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 2. パスワードを検証（失敗時は直接パスワードエラー列挙型を返す）
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            return ApiResponse.error(ApiResponseCode.PASSWORD_ERROR);
+            return ApiResponse.error(401,"パスワードが正しくありません");
         }
 
         // 3. JWT Tokenを生成
@@ -68,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
         LoginResponse loginResponse = new LoginResponse(token, userDTO);
 
         // 6. ログイン成功結果を返す（ResultのloginSuccess静的ファクトリメソッドを使用）
-        return ApiResponse.loginSuccess(loginResponse);
+        return ApiResponse.success(loginResponse);
     }
 
     /**
@@ -85,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
             if (!StringUtils.hasText(token)) {
                 log.warn("nmtoken");
                 cleanupSecurityContext();
-                return ApiResponse.error(ApiResponseCode.UNAUTHORIZED, "nmtoken");
+                return ApiResponse.error(401, "nmtoken");
             }
 
             String userId = null;
@@ -95,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
                 log.info("トークンからユーザーIDを抽出成功: {}", userId);
             } catch (Exception e) {
                 log.error("トークンからユーザーIDの抽出に失敗: {}", e.getMessage());
-                return ApiResponse.error(ApiResponseCode.UNAUTHORIZED, "トークンエラー");
+                return ApiResponse.error(401, "トークンエラー");
             }
             // 4.トークンを無効化（Redisブラックリストに追加）
             jwtTokenProvider.invalidateToken(token);
@@ -105,13 +105,13 @@ public class AuthServiceImpl implements AuthService {
             cleanupSecurityContext();
 
             // 6.成功レスポンスを返す
-            return ApiResponse.logoutSuccess();
+            return ApiResponse.success(null);
 
         } catch (Exception e) {
             log.error("ログアウト処理中に例外が発生: {}", e.getMessage(), e);
             // 何があってもセキュリティコンテキストをクリーンアップ
             cleanupSecurityContext();
-            return ApiResponse.error(ApiResponseCode.FAIL, "ログアウト失敗: " + e.getMessage());
+            return ApiResponse.error(500, "ログアウト失敗: " + e.getMessage());
         }
     }
 
@@ -172,7 +172,7 @@ public class AuthServiceImpl implements AuthService {
         // 1.JWT を解析し、検証する
         String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
         if (!jwtTokenProvider.validateToken(token)) {
-            return ApiResponse.error(ApiResponseCode.TOKEN_INVALID);
+            return ApiResponse.error(401, "トークンが無効です");
         }
         String tokenUserId = jwtTokenProvider.getUserIdFromToken(token);
         Long tokenUserType = jwtTokenProvider.getUserTypeIdFromToken(token);
@@ -180,7 +180,7 @@ public class AuthServiceImpl implements AuthService {
         // 2. 一般ユーザーは自身のパスワードのみ変更可能 管理者は全ユーザーのパスワードを変更可能
         boolean isAdmin = Objects.equals(tokenUserType, 11L);
         if (!isAdmin && !tokenUserId.equals(req.getUserId())) {
-            return ApiResponse.error(ApiResponseCode.FORBIDDEN, "他人のパスワードを変更する権限がありません");
+            return ApiResponse.error(403, "他人のパスワードを変更する権限がありません");
         }
 
         // 3. 旧パスワードを検証（管理者はスキップ）
@@ -188,17 +188,17 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new BusinessException(ApiResponseCode.USER_NOT_FOUND));
 
         if (!isAdmin && !passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
-            return ApiResponse.error(ApiResponseCode.WRONG_CURRENT_PASSWORD);
+            return ApiResponse.error(40001, "現在のパスワードが正しくありません");
         }
 
         // 4. 新しいパスワードは古いパスワードと同一にできません
         if (passwordEncoder.matches(req.getNewPassword(), user.getPassword())) {
-            return ApiResponse.error(ApiResponseCode.PASSWORD_SAME_AS_OLD);
+            return ApiResponse.error(40003, "新しいパスワードは古いパスワードと同じにすることはできません");
         }
 
         // 5. パスワード強度の二重チェック
         if (!req.getNewPassword().matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
-            return ApiResponse.error(ApiResponseCode.WEAK_NEW_PASSWORD);
+            return ApiResponse.error(40002, "新しいパスワードが強度要件を満たしていません");
         }
 
         // 6. パスワードを更新する
@@ -209,6 +209,6 @@ public class AuthServiceImpl implements AuthService {
         ChangePasswordResponse resp = new ChangePasswordResponse();
         resp.setCode(ApiResponseCode.PASSWORD_CHANGED_SUCCESS.getCode());
         resp.setMsg(ApiResponseCode.PASSWORD_CHANGED_SUCCESS.getMessage());
-        return ApiResponse.passwordChangedSuccess(resp);
+        return ApiResponse.success(resp);
     }
 }

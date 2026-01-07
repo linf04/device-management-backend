@@ -45,10 +45,10 @@ public class AuthController {
     public ApiResponse<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         // 基本的なパラメータ検証
         if (!StringUtils.hasText(loginRequest.getUserId())) {
-            return ApiResponse.error(ApiResponseCode.PARAM_ERROR, "ユーザーIDは空にできません");
+            return ApiResponse.error(400, "ユーザーIDは空にできません");
         }
         if (!StringUtils.hasText(loginRequest.getPassword())) {
-            return ApiResponse.error(ApiResponseCode.PARAM_ERROR, "パスワードは空にできません");
+            return ApiResponse.error(400, "パスワードは空にできません");
         }
         decryptPasswordFields(loginRequest);
         return authService.login(loginRequest);
