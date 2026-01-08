@@ -14,6 +14,7 @@ import java.util.List;
 public class PermissionsDTO {
     private String permissionId;
     private String deviceId;
+    private List<String> monitorNames;
     private String computerName;
     private List<String> ipAddress;
     private String userId;

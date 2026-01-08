@@ -50,10 +50,15 @@ public class DeviceInfo {
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "user_id")
     private User user;
 
-    // 修改为 @OneToMany 关系
+    // 设备IP地址（一对多）
     @OneToMany(mappedBy = "device", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private List<DeviceIp> deviceIps; // 字段名改为复数形式
+    private List<DeviceIp> deviceIps;
+
+    // 设备显示器（一对多）
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private List<MonitorInfo> monitors;
 
     @Column(name = "remark", length = Integer.MAX_VALUE)
     private String remark;
