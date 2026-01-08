@@ -109,31 +109,13 @@ public class DevicePermissionService {
 
     // 将实体列表转换为DTO列表
     private List<PermissionsDTO> convertToDTOList(List<DevicePermission> permissions) {
-        // 批量预加载关联数据，避免N+1查询问题
-        preloadDeviceAssociations(permissions);
 
         return permissions.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+
     }
 
-    // 批量预加载设备关联数据
-    private void preloadDeviceAssociations(List<DevicePermission> permissions) {
-        if (permissions == null || permissions.isEmpty()) {
-            return;
-        }
-
-        // 收集所有设备ID
-        List<String> deviceIds = permissions.stream()
-                .filter(p -> p.getDevice() != null)
-                .map(p -> p.getDevice().getDeviceId())
-                .distinct()
-                .collect(Collectors.toList());
-
-        if (deviceIds.isEmpty()) {
-            return;
-        }
-    }
 
     // 将单个实体转换为DTO - 处理多个IP地址和显示器ID
     private PermissionsDTO convertToDTO(DevicePermission permission) {
@@ -217,59 +199,4 @@ public class DevicePermissionService {
 
         return dto;
     }
-
-//    public ApiResponse<PermissionsDTO> addPermissions(PermissionsDTO permissionsDTO) {
-//        DeviceInfo deviceInfo =   deviceRepository.findByDeviceId(permissionsDTO.getDeviceId());
-//        if (deviceInfo == null) {
-//            throw new BusinessException(30001,"设备不存在");
-//        }
-//
-//        DevicePermission devicePermissions = devicePermissionRepository.findDevicePermissionsByDevice(deviceInfo);
-//
-//        if (devicePermissions != null) {
-//            throw new BusinessException(30002,"设备已存在权限信息");
-//        }
-//
-//        devicePermissionRepository.save(DevicePermission.builder()
-//                .permissionId(UUID.randomUUID().toString())
-//                .device(deviceInfo)
-//                .domainStatus(
-//                        dictRepository.findByDictTypeCodeAndSort("DOMAIN_STATUS",permissionsDTO.getDomainStatus())
-//                )
-//                .domainGroup(permissionsDTO.getDomainGroup())
-//                .noDomainReason(permissionsDTO.getNoDomainReason())
-//                .smartitStatus(
-//                        dictRepository.findByDictTypeCodeAndSort("SMARTIT_STATUS",permissionsDTO.getDomainStatus())
-//                )
-//                .noSmartitReason(permissionsDTO.getNoSmartitReason())
-//                .usbStatus(
-//                        dictRepository.findByDictTypeCodeAndSort("USB_STATUS",permissionsDTO.getDomainStatus())
-//                )
-//                .usbReason(permissionsDTO.getUsbReason())
-//                .usbExpireDate(permissionsDTO.getUsbExpireDate())
-//                .antivirusStatus(
-//                        dictRepository.findByDictTypeCodeAndSort("ANTIVIRUS_STATUS",permissionsDTO.getDomainStatus())
-//                )
-//                .noSymantecReason(permissionsDTO.getNoSymantecReason())
-//                .remark(permissionsDTO.getRemark())
-//                .createTime(Instant.now())
-//                .creater("JS2115")
-//                .updateTime(Instant.now())
-//                .updater("JS2115")
-//                .build());
-//
-//        return ApiResponse.success("添加成功",permissionsDTO);
-//    }
-//
-//    public ApiResponse<PermissionsDTO> updatePermissions(PermissionsDTO permissionsDTO) {
-//        return null;
-//    }
-//
-//    public ApiResponse<Void> deletePermissions(String id) {
-//        return null;
-//    }
-//
-//    public ApiResponse<Void> exportPermissions(Integer page, Integer size, User user, DeviceInfo deviceInfo, String permissionInfo) {
-//        return null;
-//    }
 }
