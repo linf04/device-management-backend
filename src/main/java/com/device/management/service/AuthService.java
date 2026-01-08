@@ -1,10 +1,6 @@
 package com.device.management.service;
 
-import com.device.management.dto.ChangePasswordRequest;
-import com.device.management.dto.ChangePasswordResponse;
-import com.device.management.dto.LoginRequest;
-import com.device.management.dto.LoginResponse;
-import com.device.management.dto.ApiResponse;
+import com.device.management.dto.*;
 
 public interface AuthService {
     /**
@@ -19,8 +15,6 @@ public interface AuthService {
      * @return Result<Void>：ログアウト結果
      */
     ApiResponse<Void> logout();
-
-
 
     /**
      * パスワード変更機能

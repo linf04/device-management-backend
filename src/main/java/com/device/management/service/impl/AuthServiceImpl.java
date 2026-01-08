@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 2. パスワードを検証（失敗時は直接パスワードエラー列挙型を返す）
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            return ApiResponse.error(401,"パスワードが正しくありません");
+            throw new UnauthorizedException(401, "パスワードが正しくありません");
         }
 
         // 3. JWT Tokenを生成
@@ -155,7 +155,6 @@ public class AuthServiceImpl implements AuthService {
             log.warn("セキュリティコンテキストのクリーンアップ中にエラーが発生: {}", e.getMessage());
         }
     }
-
     /**
      * パスワード変更
      *・一般ユーザ：自分のパスワードのみ変更可能（旧パスワード必須）
@@ -197,7 +196,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 5. パスワード強度の二重チェック
-        if (!req.getNewPassword().matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
+        if (!req.getNewPassword().matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?])[A-Za-z\\d@$!%*?]{8,}$")) {
             return ApiResponse.error(40002, "新しいパスワードが強度要件を満たしていません");
         }
 
@@ -211,4 +210,5 @@ public class AuthServiceImpl implements AuthService {
         resp.setMsg( "パスワードが更新されました。再度ログインしてください。");
         return ApiResponse.success(resp);
     }
+
 }

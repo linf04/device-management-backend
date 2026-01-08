@@ -1,5 +1,6 @@
 package com.device;
 
+import com.device.management.DeviceManagementApplication;
 import com.device.management.repository.UserRepository;
 import com.device.management.entity.User;
 import org.junit.jupiter.api.Test;
@@ -8,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
 
-@SpringBootTest
+@SpringBootTest(classes = DeviceManagementApplication.class)
 public class UserDataInsertTest {
     @Autowired
     private UserRepository userRepository;

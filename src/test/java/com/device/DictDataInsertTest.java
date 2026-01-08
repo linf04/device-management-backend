@@ -1,5 +1,6 @@
 package com.device;
 
+import com.device.management.DeviceManagementApplication;
 import com.device.management.repository.DictRepository;
 import com.device.management.entity.Dict;
 import org.junit.jupiter.api.Test;
@@ -10,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-@SpringBootTest
+@SpringBootTest(classes = DeviceManagementApplication.class)
 public class DictDataInsertTest {
 
     @Autowired

@@ -14,3 +14,4 @@ public class ChangePasswordResponse {
     private Integer code;
     private String msg;
 }
+

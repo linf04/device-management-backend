@@ -1,7 +1,9 @@
 package com.device.management.security;
 
+import com.device.management.exception.DecryptionException;
 import com.device.management.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -24,10 +26,10 @@ public class CryptoUtil {
             return new String(decrypted, StandardCharsets.UTF_8);
         } catch (IllegalArgumentException e) {
             // 捕获Base64解码失败异常
-            throw new ResourceNotFoundException("無効な暗号化形式");
+            throw new DecryptionException("無効な暗号化形式");
         }catch (Exception e) {
             log.error("復号に失敗しました: {}", base64, e);
-            throw new RuntimeException("復号に失敗しました", e);
+            throw new DecryptionException("復号に失敗しました");
         }
     }
 }
