@@ -32,12 +32,13 @@ public class AuthService {
      * 用户登录
      */
     public LoginResponse login(LoginRequest loginRequest) {
+        log.warn(loginRequest.toString());
+        log.warn(loginRequest.getUserId());
         User user = userRepository.findByUserId(loginRequest.getUserId())
-                .orElseThrow(() -> new UnauthorizedException("用户名或密码不正确"));
-
+                .orElseThrow(() -> new UnauthorizedException("用户名不正确"));
         // 验证密码
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())) {
-            throw new UnauthorizedException("用户名或密码不正确");
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            throw new UnauthorizedException("密码不正确");
         }
 
         // 生成 JWT Token
@@ -59,12 +60,6 @@ public class AuthService {
      */
     private UserDTO convertToDTO(User user) {
         UserDTO dto = new UserDTO();
-        dto.setUserId(user.getUserId());
-        dto.setUserName(user.getUserName());
-        dto.setDepartmentCode(user.getDepartmentCode());
-        dto.setUserLevel(user.getUserLevel());
-        dto.setCreatedDate(user.getCreatedDate());
-        dto.setUpdatedDate(user.getUpdatedDate());
         return dto;
     }
 }

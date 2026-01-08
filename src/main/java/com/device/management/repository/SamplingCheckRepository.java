@@ -10,6 +10,12 @@ import java.util.List;
 
 @Repository
 
-public interface SamplingCheckRepository extends JpaRepository<SamplingCheck, String> {
+public interface SamplingCheckRepository  extends JpaRepository<SamplingCheck, String> {
+    List<SamplingCheck> findByReportId(String reportId);
 
+    Page<SamplingCheck> findByDeviceIdAndUserId(String deviceId, String userId, Pageable pageable);
+
+    Page<SamplingCheck> findByDeviceId(String deviceId, Pageable pageable);
+
+    Page<SamplingCheck> findByUserId(String userId, Pageable pageable);
 }

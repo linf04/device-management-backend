@@ -47,11 +47,11 @@
         </dependency>
 
         <!-- H2 Database (for testing) -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.h2database</groupId>-->
+<!--            <artifactId>h2</artifactId>-->
+<!--            <scope>runtime</scope>-->
+<!--        </dependency>-->
 
         <!-- Oracle Driver (optional, uncomment for Oracle) -->
         <!-- <dependency>
@@ -85,26 +85,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- PostgreSQL Database Driver -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- H2 Database (for testing) -->
-        <!-- <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency> -->
-
-        <!-- Oracle Driver (optional, uncomment for Oracle) -->
-        <!-- <dependency>
-            <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc11</artifactId>
-            <scope>runtime</scope>
-        </dependency> -->
 
         <!-- Apache POI for Excel Export -->
         <dependency>
@@ -131,17 +111,6 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Test -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <!-- Mapstruct(Entity -> DTO) -->
         <dependency>
@@ -156,27 +125,6 @@
             <version>1.5.5.Final</version>
             <scope>provided</scope>
         </dependency>
-
-
-        <!-- Code Generator -->
-        <!--        <dependency>-->
-        <!--            <groupId>com.baomidou</groupId>-->
-        <!--            <artifactId>mybatis-plus-core</artifactId>-->
-        <!--            <version>3.5.15</version>-->
-        <!--        </dependency>-->
-
-        <!--        <dependency>-->
-        <!--            <groupId>com.baomidou</groupId>-->
-        <!--            <artifactId>mybatis-plus-generator</artifactId>-->
-        <!--            <version>3.5.15</version>-->
-        <!--        </dependency>-->
-
-        <!--        <dependency>-->
-        <!--            <groupId>org.freemarker</groupId>-->
-        <!--            <artifactId>freemarker</artifactId>-->
-        <!--            <version>2.3.32</version>-->
-        <!--        </dependency>-->
-
 
         <!-- SpringBoot devtools -->
         <dependency>

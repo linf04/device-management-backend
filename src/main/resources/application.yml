@@ -1,26 +1,20 @@
-spring:
-  application:
-    name: device-management-system
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-  datasource:
-    url: jdbc:postgresql://localhost:5432/device_management
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
-
 server:
   port: 8080
   servlet:
     context-path: /
 
+spring:
+  application:
+    name: device-management-system
+  profiles:
+    active: dev
+
 logging:
   level:
     root: INFO
     com.device: DEBUG
+
+jwt:
+  secret: my-super-secret-key-which-is-at-least-32-bytes!
+  expiration: 86400000
+
