@@ -35,7 +35,7 @@ public class AuthServiceImpl implements AuthService {
     /**
      * ユーザーログイン：tokenとuserInfoを含むログイン結果を返す
      * @param loginRequest ログインリクエストパラメータ
-     * @return Result<LoginResponse>：成功時はtoken+ユーザー情報、失敗時はエラー列挙型を返す
+     * @return Result<LoginDTO>：成功時はtoken+ユーザー情報、失敗時はエラー列挙型を返す
      */
     @Override
     public ApiResponse<LoginDTO> login(LoginRequest loginRequest) {
@@ -160,7 +160,7 @@ public class AuthServiceImpl implements AuthService {
      *・一般ユーザ：自分のパスワードのみ変更可能（旧パスワード必須）
      *・管理者　　：全ユーザーのパスワードをリセット可能（旧パスワード不要）
      * @param req  変更内容（userId / currentPassword / newPassword）
-     * @return ApiResponse<ChangePasswordResponse> 成功時 20000, 失敗時各業務エラーコード
+     * @return ApiResponse<void> 成功時 200, 失敗時各業務エラーコード
      * @throws UnauthorizedException システムエラー（ユーザ不在等）
      */
     @Override
@@ -201,11 +201,7 @@ public class AuthServiceImpl implements AuthService {
         // 6. パスワードを更新する
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));
         userRepository.save(user);
-/*
-        // 7. レスポンスを返却する
-        ChangePasswordResponse resp = new ChangePasswordResponse();
-        resp.setCode(20000);
-        resp.setMsg( "パスワードが更新されました。再度ログインしてください。");*/
+
         return ApiResponse.success("パスワードが更新されました。再度ログインしてください。");
     }
 
