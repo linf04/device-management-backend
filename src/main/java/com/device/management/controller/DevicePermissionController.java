@@ -60,7 +60,14 @@ public class DevicePermissionController {
 
     //権限を更新します
     @PutMapping(value = "/{id}")
-    public ApiResponse<?> updatePermissions(@RequestBody PermissionsDTO permissionsDTO) {
+    public ApiResponse<?> updatePermissions(@PathVariable("id") String id,@RequestBody PermissionsDTO permissionsDTO) {
+//        if (id == null || id.isEmpty()){
+//            throw new BusinessException(30010, "参数错误permissionID不能为空");
+//        }
+        if (permissionsDTO == null) {
+            throw new BusinessException(30011, "更新参数不能为空");
+        }
+        permissionsDTO.setPermissionId(id);
         return ApiResponse.success("更新成功", devicePermissionService.updatePermissions(permissionsDTO));
     }
 

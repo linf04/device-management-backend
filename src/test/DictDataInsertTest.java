@@ -1,4 +1,4 @@
-import com.device.DeviceManagementApplication;
+import com.device.management.DeviceManagementApplication;
 import com.device.management.repository.DictRepository;
 import com.device.management.entity.Dict;
 import org.junit.jupiter.api.Test;

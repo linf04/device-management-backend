@@ -15,6 +15,7 @@ import jakarta.annotation.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -67,10 +68,11 @@ public class DevicePermissionService {
     }
 
     public PermissionsDTO updatePermissions(PermissionsDTO permissionsDTO) {
-        if (permissionsDTO.getPermissionId().isEmpty()) {
-            throw new BusinessException(30005, "权限ID不能为空");
-        }
         DevicePermission devicePermission = devicePermissionRepository.findDevicePermissionByPermissionId(permissionsDTO.getPermissionId());
+        if (devicePermission == null) {
+            throw new BusinessException(30012, "未找到该权限信息，无法更新");
+        }
+
         if (permissionsDTO.getDomainStatus() != null) {
             devicePermission.setDomainStatus(Dict.builder().id(permissionsDTO.getDomainStatus()).build());
         }

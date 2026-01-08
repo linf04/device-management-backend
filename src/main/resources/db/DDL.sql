@@ -21,7 +21,7 @@ CREATE TABLE "public"."device_info" (
   "login_username" varchar(100) COLLATE "pg_catalog"."default",
   "project" varchar(100) COLLATE "pg_catalog"."default",
   "dev_room" varchar(100) COLLATE "pg_catalog"."default",
-  "job_number" varchar(50) COLLATE "pg_catalog"."default" NOT NULL,
+  "user_id" varchar(50) COLLATE "pg_catalog"."default" NOT NULL,
   "remark" text COLLATE "pg_catalog"."default",
   "self_confirm_id" int8,
   "os_id" int8,
@@ -40,7 +40,7 @@ COMMENT ON COLUMN "public"."device_info"."computer_name" IS 'コンピュータ�
 COMMENT ON COLUMN "public"."device_info"."login_username" IS 'ログインユーザ名';
 COMMENT ON COLUMN "public"."device_info"."project" IS '所属プロジェクト';
 COMMENT ON COLUMN "public"."device_info"."dev_room" IS '所属開発室';
-COMMENT ON COLUMN "public"."device_info"."job_number" IS '従業員番号（所属ユーザ、外部キー）';
+COMMENT ON COLUMN "public"."device_info"."user_id" IS 'ユーザID（所属ユーザ、外部キー）';
 COMMENT ON COLUMN "public"."device_info"."remark" IS '備考';
 COMMENT ON COLUMN "public"."device_info"."self_confirm_id" IS '本人確認ID（辞書項目：CONFIRM_STATUS 関連）';
 COMMENT ON COLUMN "public"."device_info"."os_id" IS 'OSID（辞書項目：OS_TYPE 関連）';
@@ -179,7 +179,7 @@ COMMENT ON TABLE "public"."monitor_info" IS 'モニター情報テーブル（�
 DROP TABLE IF EXISTS "public"."sampling_check";
 CREATE TABLE "public"."sampling_check" (
   "sampling_id" varchar(50) COLLATE "pg_catalog"."default" NOT NULL,
-  "job_number" varchar(50) COLLATE "pg_catalog"."default" NOT NULL,
+  "user_id" varchar(50) COLLATE "pg_catalog"."default" NOT NULL,
   "device_id" varchar(50) COLLATE "pg_catalog"."default" NOT NULL,
   "installed_software" bool,
   "disposal_measures" text COLLATE "pg_catalog"."default",
@@ -198,7 +198,7 @@ CREATE TABLE "public"."sampling_check" (
 )
 ;
 COMMENT ON COLUMN "public"."sampling_check"."sampling_id" IS 'サンプリングチェック番号（プライマリキー）';
-COMMENT ON COLUMN "public"."sampling_check"."job_number" IS '従業員番号（外部キー）';
+COMMENT ON COLUMN "public"."sampling_check"."user_id" IS 'ユーザID（外部キー）';
 COMMENT ON COLUMN "public"."sampling_check"."device_id" IS '機器番号（外部キー）';
 COMMENT ON COLUMN "public"."sampling_check"."installed_software" IS 'インストールソフトウェア';
 COMMENT ON COLUMN "public"."sampling_check"."disposal_measures" IS '処置措置';
@@ -224,7 +224,6 @@ CREATE TABLE "public"."users" (
   "user_id" varchar(50) COLLATE "pg_catalog"."default" NOT NULL,
   "dept_id" varchar(50) COLLATE "pg_catalog"."default" NOT NULL,
   "name" varchar(100) COLLATE "pg_catalog"."default" NOT NULL,
-  "job_number" varchar(50) COLLATE "pg_catalog"."default" NOT NULL,
   "user_type_id" int8 NOT NULL,
   "password" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
   "create_time" timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -236,7 +235,6 @@ CREATE TABLE "public"."users" (
 COMMENT ON COLUMN "public"."users"."user_id" IS 'ユーザID（プライマリキー）';
 COMMENT ON COLUMN "public"."users"."dept_id" IS '部署番号';
 COMMENT ON COLUMN "public"."users"."name" IS '氏名';
-COMMENT ON COLUMN "public"."users"."job_number" IS '従業員番号（ユニーク、機器/権限関連）';
 COMMENT ON COLUMN "public"."users"."user_type_id" IS 'ユーザタイプID（辞書項目：USER_TYPE 関連）';
 COMMENT ON COLUMN "public"."users"."password" IS 'パスワード（暗号化保存）';
 COMMENT ON COLUMN "public"."users"."create_time" IS '作成日時';
@@ -285,7 +283,7 @@ CREATE INDEX "idx_device_ssd" ON "public"."device_info" USING btree (
   "ssd_id" "pg_catalog"."int8_ops" ASC NULLS LAST
 );
 CREATE INDEX "idx_device_user" ON "public"."device_info" USING btree (
-  "job_number" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+  "user_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
 );
 
 -- ----------------------------
@@ -387,6 +385,16 @@ EXECUTE PROCEDURE "public"."update_modified_column"();
 ALTER TABLE "public"."monitor_info" ADD CONSTRAINT "monitor_info_pkey" PRIMARY KEY ("monitor_id");
 
 -- ----------------------------
+-- Indexes structure for table sampling_check
+-- ----------------------------
+CREATE INDEX "idx_sampling_device" ON "public"."sampling_check" USING btree (
+  "device_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+);
+CREATE INDEX "idx_sampling_user" ON "public"."sampling_check" USING btree (
+  "user_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST
+);
+
+-- ----------------------------
 -- Primary Key structure for table sampling_check
 -- ----------------------------
 ALTER TABLE "public"."sampling_check" ADD CONSTRAINT "sampling_check_pkey" PRIMARY KEY ("sampling_id");
@@ -406,11 +414,6 @@ FOR EACH ROW
 EXECUTE PROCEDURE "public"."update_modified_column"();
 
 -- ----------------------------
--- Uniques structure for table users
--- ----------------------------
-ALTER TABLE "public"."users" ADD CONSTRAINT "uk_user_job_number" UNIQUE ("job_number");
-
--- ----------------------------
 -- Primary Key structure for table users
 -- ----------------------------
 ALTER TABLE "public"."users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("user_id");
@@ -423,7 +426,7 @@ ALTER TABLE "public"."device_info" ADD CONSTRAINT "fk_device_memory" FOREIGN KEY
 ALTER TABLE "public"."device_info" ADD CONSTRAINT "fk_device_os" FOREIGN KEY ("os_id") REFERENCES "public"."dict" ("dict_id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "public"."device_info" ADD CONSTRAINT "fk_device_self_confirm" FOREIGN KEY ("self_confirm_id") REFERENCES "public"."dict" ("dict_id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "public"."device_info" ADD CONSTRAINT "fk_device_ssd" FOREIGN KEY ("ssd_id") REFERENCES "public"."dict" ("dict_id") ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "public"."device_info" ADD CONSTRAINT "fk_device_user" FOREIGN KEY ("job_number") REFERENCES "public"."users" ("job_number") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."device_info" ADD CONSTRAINT "fk_device_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- ----------------------------
 -- Foreign Keys structure for table device_ip
@@ -448,7 +451,7 @@ ALTER TABLE "public"."monitor_info" ADD CONSTRAINT "fk_monitor_device" FOREIGN K
 -- Foreign Keys structure for table sampling_check
 -- ----------------------------
 ALTER TABLE "public"."sampling_check" ADD CONSTRAINT "fk_sampling_check_device" FOREIGN KEY ("device_id") REFERENCES "public"."device_info" ("device_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
-ALTER TABLE "public"."sampling_check" ADD CONSTRAINT "fk_sampling_check_user" FOREIGN KEY ("job_number") REFERENCES "public"."users" ("job_number") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."sampling_check" ADD CONSTRAINT "fk_sampling_check_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- ----------------------------
 -- Foreign Keys structure for table users
