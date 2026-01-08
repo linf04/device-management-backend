@@ -8,7 +8,7 @@ public interface AuthService {
      * @param loginRequest
      * @return
      */
-    ApiResponse<LoginResponse> login(LoginRequest loginRequest);
+    ApiResponse<LoginDTO> login(LoginRequest loginRequest);
 
     /**
      * ユーザーログアウト

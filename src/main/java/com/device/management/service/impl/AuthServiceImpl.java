@@ -38,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
      * @return Result<LoginResponse>：成功時はtoken+ユーザー情報、失敗時はエラー列挙型を返す
      */
     @Override
-    public ApiResponse<LoginResponse> login(LoginRequest loginRequest) {
+    public ApiResponse<LoginDTO> login(LoginRequest loginRequest) {
         // 1. ユーザーIDでユーザーを検索（存在しない場合は例外をスロー、ResultCode列挙型を直接使用して構築）
         User user = userRepository.findByUserId(loginRequest.getUserId())
                 .orElseThrow(() -> new UnauthorizedException("ユーザーが存在しません"));
@@ -65,10 +65,10 @@ public class AuthServiceImpl implements AuthService {
         userDTO.setUserTypeName(userType.getDictItemName());
 
         // 5. LoginResponseを組み立て
-        LoginResponse loginResponse = new LoginResponse(token, userDTO);
+        LoginDTO loginDTO = new LoginDTO(token, userDTO);
 
         // 6. ログイン成功結果を返す（ResultのloginSuccess静的ファクトリメソッドを使用）
-        return ApiResponse.success( "ログイン成功",loginResponse);
+        return ApiResponse.success( "ログイン成功", loginDTO);
     }
 
     /**
