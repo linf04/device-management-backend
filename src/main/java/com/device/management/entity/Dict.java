@@ -12,9 +12,9 @@ import java.time.Instant;
 @Setter
 @Entity
 @Table(name = "dict")
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Dict {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -65,4 +65,6 @@ public class Dict {
     @Size(max = 100)
     @Column(name = "updater", length = 100)
     private String updater;
+
+
 }

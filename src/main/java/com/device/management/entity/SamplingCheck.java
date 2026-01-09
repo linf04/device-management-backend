@@ -3,8 +3,7 @@ package com.device.management.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
@@ -14,6 +13,9 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Table(name = "sampling_check")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SamplingCheck {
     @Id
     @Size(max = 50)
@@ -22,8 +24,8 @@ public class SamplingCheck {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "job_number", nullable = false, referencedColumnName = "job_number")
-    private User jobNumber;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -82,6 +84,11 @@ public class SamplingCheck {
     @Size(max = 100)
     @Column(name = "updater", length = 100)
     private String updater;
+
+    @Size(max = 50)
+    @NotNull
+    @Column(name = "job_number", nullable = false, length = 50)
+    private String jobNumber;
 
 
 }

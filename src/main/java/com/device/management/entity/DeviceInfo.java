@@ -14,9 +14,9 @@ import java.time.Instant;
 @Setter
 @Entity
 @Table(name = "device_info")
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class DeviceInfo {
     @Id
     @Size(max = 50)
@@ -46,8 +46,8 @@ public class DeviceInfo {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.RESTRICT)
-    @JoinColumn(name = "job_number", nullable = false, referencedColumnName = "job_number")
-    private User jobNumber;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(name = "remark", length = Integer.MAX_VALUE)
     private String remark;

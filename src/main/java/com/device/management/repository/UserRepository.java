@@ -14,5 +14,5 @@ public interface UserRepository extends
         JpaRepository<User, Long>,
         JpaSpecificationExecutor<User>,
         QueryByExampleExecutor<User> {
-    User findByJobNumber(String jobNumber);
+    User findByUserId(String userId);
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 /**
  * 全局异常处理
@@ -51,7 +52,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
-    /*
+    /**
     * 业务异常
     * */
     @ExceptionHandler(BusinessException.class)
@@ -61,6 +62,7 @@ public class GlobalExceptionHandler {
         ApiResponse<String> response = ApiResponse.error(ex.getCode(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+
 
     /**
      * 处理所有其他异常

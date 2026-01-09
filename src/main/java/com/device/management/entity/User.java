@@ -33,11 +33,6 @@ public class User {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Size(max = 50)
-    @NotNull
-    @Column(name = "job_number", nullable = false, length = 50)
-    private String jobNumber;
-
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.SET_NULL)

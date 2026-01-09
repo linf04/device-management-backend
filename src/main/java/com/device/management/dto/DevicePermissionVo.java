@@ -19,27 +19,27 @@ public class DevicePermissionVo {
     private String computerName;
     private Object ipAddress;
 
-    // 使用者信息
-    private String jobNumber;
+    // 使用者信息 | ユーザー情報
+    private String UserId;
     private String name;
     private String deptId;
     private String loginUsername;
 
-    // 域信息
+    // 域信息  | 領域情報
     private Long domainStatusId;
     private String domainGroup;
     private String noDomainReason;
 
-    // SmartIT信息
+    // SmartIT信息 | SmartIT情報
     private Long smartitStatusId;
     private String noSmartitReason;
 
-    // USB信息
+    // USB信息   | USB情報
     private Long usbStatusId;
     private String usbReason;
     private LocalDate useExpireDate;
 
-    // 其他
+    // 其他  | その他
     private Long antivirusStatusId;
     private String noSymantecReason;
     private String remark;

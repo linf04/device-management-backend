@@ -26,25 +26,25 @@ import java.util.Map;
 public class DevicePermissionExcelService {
     // 定义列宽（字符数）
     private static final int[] COLUMN_WIDTHS = {8,   //编号
-            30,  //设备编号
-            20,  //电脑名
-            20,  //显示器
-            25,  //IP地址
-            10,  //工号
-            10,  //姓名
-            10,  //级别
-            15,  //登录用户名
-            10,  //域名
-            15,  //域内组名
-            15,  //不加域理由
-            15,  //SmartIT状态
-            20,  //不安装SmartIT理由
-            12,  //USB状态
-            20,  //USB开通理由
-            15,  //使用截止日期
-            12,  //连接状态
-            20,  //无Symantec理由
-            30   //备注
+            30,  //设备编号 |機器番号
+            20,  //电脑名 | コンピュータ名
+            20,  //显示器 | 機器番号
+            25,  //IP地址 | IPアドレス
+            10,  //工号 | 社員番号
+            10,  //姓名 | 名前
+            10,  //级别 | 役職
+            15,  //登录用户名 | ログインユーザー名
+            10,  //域名 | ドメイン名
+            15,  //域内组名 | ドメイングループ名
+            15,  //不加域理由 | 不加ドメイン理由
+            15,  //SmartIT状态 | SmartIT状態
+            20,  //不安装SmartIT理由 | SmartITインストール理由
+            12,  //USB状态 | USB状態
+            20,  //USB开通理由 | USB開通理由
+            15,  //使用截止日期 | 使用期限
+            12,  //连接状态 | 接続状態
+            20,  //无Symantec理由 | Symantecなし理由
+            30   //备注 | 備考
     };
     @Resource
     DevicePermissionRepository devicePermissionRepository;
@@ -62,13 +62,13 @@ public class DevicePermissionExcelService {
         }
     }
 
-    // 提供编码转名称的工具方法
+    // 提供编码转名称的工具方法 | 文字列をIDから名称に変換するユーティリティメソッド
     private String getDictName(Long key) {
         return dictCache.get(key);
     }
 
     /**
-     * 导出设备使用权限清单
+     * 导出设备使用权限清单 | 設備使用許可リストをエクスポートする
      */
     public void exportDevicePermissionList(List<DevicePermissionExcelVo> dataList, HttpServletResponse response) throws IOException {
         // 创建工作簿
@@ -95,7 +95,7 @@ public class DevicePermissionExcelService {
     }
 
     /**
-     * 创建各种样式
+     * 创建各种样式 | 各種スタイルを作成する
      */
     private Map<String, CellStyle> createStyles(Workbook workbook) {
         Map<String, CellStyle> styles = new java.util.HashMap<>();
@@ -117,7 +117,7 @@ public class DevicePermissionExcelService {
 //        titleStyle.setBorderRight(BorderStyle.THIN);
 //        styles.put("title", titleStyle);
 
-        // 2. 表头样式（灰色背景，加粗）
+        // 2. 表头样式（灰色背景，加粗） | 表題のスタイル（灰色背景、太字）
         CellStyle headerStyle = workbook.createCellStyle();
         Font headerFont = workbook.createFont();
         headerFont.setBold(true);
@@ -131,10 +131,10 @@ public class DevicePermissionExcelService {
         headerStyle.setBorderTop(BorderStyle.THIN);
         headerStyle.setBorderLeft(BorderStyle.THIN);
         headerStyle.setBorderRight(BorderStyle.THIN);
-        headerStyle.setWrapText(true); // 自动换行
+        headerStyle.setWrapText(true); // 自动换行 | 自動改行
         styles.put("header", headerStyle);
 
-        // 3. 数据样式（默认）
+        // 3. 数据样式（默认） | データのスタイル（デフォルト）
         CellStyle dataStyle = workbook.createCellStyle();
         dataStyle.setAlignment(HorizontalAlignment.LEFT);
         dataStyle.setVerticalAlignment(VerticalAlignment.CENTER);
@@ -145,13 +145,13 @@ public class DevicePermissionExcelService {
         dataStyle.setWrapText(true);
         styles.put("data", dataStyle);
 
-        // 4. 居中数据样式
+        // 4. 居中数据样式 | 中央寄せデータのスタイル
         CellStyle centerStyle = workbook.createCellStyle();
         centerStyle.cloneStyleFrom(dataStyle);
         centerStyle.setAlignment(HorizontalAlignment.CENTER);
         styles.put("center", centerStyle);
 
-        // 5. 备注样式（斜体）
+        // 5. 备注样式（斜体） | 備考のスタイル（斜体）
         CellStyle remarkStyle = workbook.createCellStyle();
         Font remarkFont = workbook.createFont();
         remarkFont.setItalic(true);
@@ -159,7 +159,7 @@ public class DevicePermissionExcelService {
         remarkStyle.cloneStyleFrom(dataStyle);
         styles.put("remark", remarkStyle);
 
-        // 6. 日期样式
+        // 6. 日期样式  | 日付のスタイル
         CellStyle dateStyle = workbook.createCellStyle();
         CreationHelper createHelper = workbook.getCreationHelper();
         dateStyle.cloneStyleFrom(dataStyle);
@@ -170,7 +170,7 @@ public class DevicePermissionExcelService {
     }
 
     /**
-     * 设置列宽
+     * 设置列宽 | 列の幅を設定する
      */
     private void setColumnWidths(Sheet sheet) {
         for (int i = 0; i < COLUMN_WIDTHS.length; i++) {
@@ -179,36 +179,36 @@ public class DevicePermissionExcelService {
     }
 
     /**
-     * 构建Excel模板
+     * 构建Excel模板    | Excelテンプレートを構築する
      */
     private int buildExcelTemplate(Sheet sheet, Map<String, CellStyle> styles, List<DevicePermissionExcelVo> dataList) {
         int rowNum = 0;
 
-        // 第一行：编号信息
+        // 第一行：编号信息 | 番号情報
 //        Row row0 = sheet.createRow(rowNum++);
 //        createMergedCell(sheet, row0, 0, 16, "编号", styles.get("title"));
 //        createCell(row0, 17, "ISMSFM0502-1", styles.get("center"));
 
-        // 第二行：版权和更新日期
+        // 第二行：版权和更新日期 | 著作権と更新日
 //        Row row1 = sheet.createRow(rowNum++);
 //        createMergedCell(sheet, row1, 0, 16, "江苏海隆软件有限公司 版权所有 社外秘", styles.get("title"));
 //        createCell(row1, 17, "更新日期", styles.get("header"));
 //        createCell(row1, 18, new SimpleDateFormat("yyyy-MM-dd").format(new Date()), styles.get("center"));
 
-        // 第三行：主标题
+        // 第三行：主标题  | 主題
 //        Row row2 = sheet.createRow(rowNum++);
 //        createMergedCell(sheet, row2, 0, 18, "设备使用权限清单", styles.get("title"));
 
-        // 第四行：部门
+        // 第四行：部门   | 部門
 //        Row row3 = sheet.createRow(rowNum++);
 //        createMergedCell(sheet, row3, 0, 18, "部门", styles.get("title"));
 
-        // 第五行：部门代码（这里应该根据数据动态显示）
+        // 第五行：部门代码（这里应该根据数据动态显示）   | 部門コード（データに応じて動的に表示）
 //        Row row4 = sheet.createRow(rowNum++);
 //        String deptCode = dataList.isEmpty() ? "" : dataList.get(0).getDepartmentCode();
 //        createMergedCell(sheet, row4, 0, 18, deptCode, styles.get("title"));
 
-        // 第六行：大表头（合并单元格）
+        // 第六行：大表头（合并单元格）   | 大見出し（結合セル）
         Row row5 = sheet.createRow(rowNum++);
         createCell(row5, 0, "编号", styles.get("header"));
         createMergedCell(sheet, row5, 1, 4, "设备", styles.get("header"));
@@ -219,7 +219,7 @@ public class DevicePermissionExcelService {
         createMergedCell(sheet, row5, 17, 18, "防病毒", styles.get("header"));
         createCell(row5, 19, "备注", styles.get("header"));
 
-        // 第七行：详细表头
+        // 第七行：详细表头 | 詳細見出し
         Row row6 = sheet.createRow(rowNum++);
         String[] headers = {"", "设备编号", "电脑名", "显示器", "IP地址", "工号", "姓名", "级别", "登录用户名", "域名", "域内组名", "不加域理由", "SmartIT状态", "不安装SmartIT理由", "USB状态", "USB开通理由", "使用截止日期", "连接状态", "无Symantec理由", ""};
 
@@ -229,14 +229,14 @@ public class DevicePermissionExcelService {
             cell.setCellStyle(styles.get("header"));
         }
 
-        // 填充数据行
+        // 填充数据行    | データ行を埋める
         rowNum = fillDataRows(sheet, styles, dataList, rowNum);
 
         return rowNum;
     }
 
     /**
-     * 填充数据行
+     * 填充数据行    | データ行を埋める
      */
     private int fillDataRows(Sheet sheet, Map<String, CellStyle> styles, List<DevicePermissionExcelVo> dataList, int startRow) {
         int rowNum = startRow;
@@ -246,42 +246,42 @@ public class DevicePermissionExcelService {
             DevicePermissionExcelVo item = dataList.get(i);
             Row row = sheet.createRow(rowNum++);
 
-            // 编号
+            // 编号   | 番号
             createCell(row, 0, String.valueOf(i + 1), styles.get("center"));
 
-            // 设备信息
+            // 设备信息 | 設備情報
             createCell(row, 1, item.getDeviceId(), styles.get("data"));
             createCell(row, 2, item.getComputerName(), styles.get("data"));
             createCell(row, 3, item.getMonitorName() != null ? item.getMonitorName().toString() : "", styles.get("data"));
             createCell(row, 4, item.getIpAddress() != null ? item.getIpAddress().toString() : "", styles.get("data"));
 
-            // 使用者信息
-            createCell(row, 5, item.getJobNumber(), styles.get("center"));
+            // 使用者信息    | 使用者情報
+            createCell(row, 5, item.getUserId(), styles.get("center"));
             createCell(row, 6, item.getName(), styles.get("center"));
             createCell(row, 7, item.getDeptId(), styles.get("center"));
             createCell(row, 8, item.getLoginUsername(), styles.get("data"));
 
-            // 域信息
+            // 域信息    | 域情報
             createCell(row, 9, getDictName(item.getDomainStatusId()), styles.get("center"));
             createCell(row, 10, item.getDomainGroup(), styles.get("data"));
             createCell(row, 11, item.getNoDomainReason(), styles.get("data"));
 
-            // SmartIT信息
+            // SmartIT信息    | SmartIT情報
             createCell(row, 12, getDictName(item.getSmartitStatusId()), styles.get("center"));
             createCell(row, 13, item.getNoSmartitReason(), styles.get("data"));
 
-            // USB信息
+            // USB信息    | USB情報
             createCell(row, 14, getDictName(item.getUsbStatusId()), styles.get("center"));
             createCell(row, 15, item.getUsbReason(), styles.get("data"));
             createCell(row, 16, item.getUseExpireDate() != null ? item.getUseExpireDate().format(dateFormatter)  // LocalDate 直接调用 format 方法
                     : "", styles.get("date"));
 
-            // 其他信息
+            // 其他信息    | その他情報
             createCell(row, 17, getDictName(item.getAntivirusStatusId()), styles.get("center"));
             createCell(row, 18, item.getNoSymantecReason(), styles.get("data"));
             createCell(row, 19, item.getRemark(), styles.get("remark"));
 
-            // 如果有多个IP，可能需要添加额外的行（这里简化处理）
+            // 如果有多个IP，可能需要添加额外的行（这里简化处理）    | 複数IPがある場合、追加行が必要（ここは簡略化処理）
 //            if (item.getIpAddress() != null && item.getIpAddress().contains("\n")) {
 //                String[] ips = item.getIpAddress().split("\n");
 //                for (int j = 1; j < ips.length; j++) {
@@ -295,40 +295,40 @@ public class DevicePermissionExcelService {
     }
 
 //    /**
-//     * 添加说明和签名行
+//     * 添加说明和签名行    | 説明と署名行を追加する
 //     */
 //    private int addExplanationRows(Sheet sheet, Map<String, CellStyle> styles, int startRow) {
 //        int rowNum = startRow;
 //
-//        // 空行
+//        // 空行 | 空行
 //        sheet.createRow(rowNum++);
 //
-//        // 说明文字
+//        // 说明文字    | 説明文
 //        Row explanationRow = sheet.createRow(rowNum++);
 //        String explanation = "※1.复查表单流程\n①各部门：确认实际数据与此表单的一致性\n②网络设备科：复查，确认\n\n※2.各部门负责此表单的日常维护";
 //        createMergedCell(sheet, explanationRow, 0, 15, explanation, styles.get("data"));
 //        createCell(explanationRow, 16, "信息安全员", styles.get("center"));
 //        createCell(explanationRow, 17, "设备管理科", styles.get("center"));
 //
-//        // 签名行1
+//        // 签名行1    | 署名行1
 //        Row signRow1 = sheet.createRow(rowNum++);
 //        createMergedCell(sheet, signRow1, 0, 15, "", styles.get("data"));
 //        createCell(signRow1, 16, "王邵赟\n2025/8/29", styles.get("center"));
 //        createCell(signRow1, 17, "夏军\n2025/8/29", styles.get("center"));
 //
-//        // 签名行2
+//        // 签名行2    | 署名行2
 //        Row signRow2 = sheet.createRow(rowNum++);
 //        createMergedCell(sheet, signRow2, 0, 15, "", styles.get("data"));
 //        createCell(signRow2, 16, "（盖章）", styles.get("center"));
 //        createCell(signRow2, 17, "（盖章）", styles.get("center"));
 //
-//        // 签名行3
+//        // 签名行3    | 署名行3
 //        Row signRow3 = sheet.createRow(rowNum++);
 //        createMergedCell(sheet, signRow3, 0, 15, "", styles.get("data"));
 //        createCell(signRow3, 16, "…", styles.get("center"));
 //        createCell(signRow3, 17, "（盖章）", styles.get("center"));
 //
-//        // 签名行4
+//        // 签名行4    | 署名行4
 //        Row signRow4 = sheet.createRow(rowNum++);
 //        createMergedCell(sheet, signRow4, 0, 15, "", styles.get("data"));
 //        createCell(signRow4, 16, "（盖章）", styles.get("center"));
@@ -338,7 +338,7 @@ public class DevicePermissionExcelService {
 //    }
 
     /**
-     * 创建合并单元格
+     * 创建合并单元格  | 結合セルを作成する
      */
     private void createMergedCell(Sheet sheet, Row row, int firstCol, int lastCol, String value, CellStyle style) {
         if (firstCol < lastCol) {
@@ -352,7 +352,7 @@ public class DevicePermissionExcelService {
     }
 
     /**
-     * 创建普通单元格
+     * 创建普通单元格  | 普通のセルを作成する
      */
     private void createCell(Row row, int col, String value, CellStyle style) {
         Cell cell = row.createCell(col);

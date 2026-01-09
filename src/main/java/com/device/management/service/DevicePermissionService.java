@@ -1,6 +1,5 @@
 package com.device.management.service;
 
-import com.device.management.dto.ApiResponse;
 import com.device.management.dto.DevicePermissionVo;
 import com.device.management.dto.PermissionsDTO;
 import com.device.management.entity.DeviceInfo;
@@ -15,7 +14,6 @@ import jakarta.annotation.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -35,7 +33,7 @@ public class DevicePermissionService {
     public DevicePermissionVo getPermissionVoByPermissionId(String permissionId) {
         DevicePermissionVo devicePermissionVo = devicePermissionRepository.findPermissionVoByPermissionId(permissionId);
         if (devicePermissionVo == null) {
-            throw new BusinessException(30003, "没有找到该权限信息");
+            throw new BusinessException(30001, "権限情報が見つかりません");
         }
         return devicePermissionVo;
     }
@@ -49,13 +47,13 @@ public class DevicePermissionService {
 
         DeviceInfo deviceInfo = deviceRepository.findByDeviceId(permissionsDTO.getDeviceId());
         if (deviceInfo == null) {
-            throw new BusinessException(30001, "设备不存在");
+            throw new BusinessException(30002, "デバイスが存在しません");
         }
 
         DevicePermission devicePermissions = devicePermissionRepository.findDevicePermissionsByDevice(deviceInfo);
 
         if (devicePermissions != null) {
-            throw new BusinessException(30002, "设备已存在权限信息");
+            throw new BusinessException(30003, "デバイスにはすでに権限情報があります");
         }
 
         devicePermissionRepository.save(DevicePermission.builder().permissionId(UUID.randomUUID().toString()).device(deviceInfo).domainStatus(Dict.builder().id(permissionsDTO.getDomainStatus()).build()).domainGroup(permissionsDTO.getDomainGroup()).noDomainReason(permissionsDTO.getNoDomainReason()).smartitStatus(Dict.builder().id(permissionsDTO.getSmartitStatus()).build()).noSmartitReason(permissionsDTO.getNoSmartitReason()).usbStatus(Dict.builder().id(permissionsDTO.getUsbStatus()).build()).usbReason(permissionsDTO.getUsbReason()).usbExpireDate(permissionsDTO.getUsbExpireDate()).antivirusStatus(Dict.builder().id(permissionsDTO.getAntivirusStatus()).build()).noSymantecReason(permissionsDTO.getNoSymantecReason()).remark(permissionsDTO.getRemark()).createTime(Instant.now())
@@ -70,7 +68,7 @@ public class DevicePermissionService {
     public PermissionsDTO updatePermissions(PermissionsDTO permissionsDTO) {
         DevicePermission devicePermission = devicePermissionRepository.findDevicePermissionByPermissionId(permissionsDTO.getPermissionId());
         if (devicePermission == null) {
-            throw new BusinessException(30012, "未找到该权限信息，无法更新");
+            throw new BusinessException(30004, "権限情報が見つからず、更新できません");
         }
 
         if (permissionsDTO.getDomainStatus() != null) {
@@ -106,22 +104,18 @@ public class DevicePermissionService {
         if (permissionsDTO.getRemark() != null) {
             devicePermission.setRemark(permissionsDTO.getRemark());
         }
-
         devicePermission.setUpdater("JS2115");
         devicePermission.setUpdateTime(Instant.now());
 
-        try {
-            devicePermissionRepository.save(devicePermission);
-        } catch (Exception e) {
-            throw new BusinessException(30006, e.getMessage());
-        }
+        devicePermissionRepository.save(devicePermission);
+
         return permissionsDTO;
     }
 
     public String deletePermissions(String id) {
         DevicePermission devicePermission = devicePermissionRepository.findDevicePermissionByPermissionId(id);
         if (devicePermission == null) {
-            throw new BusinessException(30007, "没有找到该权限信息");
+            throw new BusinessException(30005, "権限情報が見つかりません");
         }
         devicePermissionRepository.delete(devicePermission);
         return id;
