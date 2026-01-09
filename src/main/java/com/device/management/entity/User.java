@@ -30,6 +30,10 @@ public class User {
     @Column(name = "name", length = 100, nullable = false)
     private String name; // 氏名
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_type_id", referencedColumnName = "dict_id",insertable = false, updatable = false)
+    private Dict userTypeDict; // ユーザタイプ（辞書項目：USER_TYPE 関連）
+
     @Column(name = "password", length = 255, nullable = false)
     private String password; // パスワード（暗号化保存）
 
@@ -50,9 +54,6 @@ public class User {
     // ============= 関連関係 =============
 
     // ユーザータイプ（辞書関連）
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_type_id", referencedColumnName = "dict_id", insertable = false, updatable = false)
-    private Dict userType;
 
     @Column(name = "user_type_id")
     private Long userTypeId; // ユーザータイプID（辞書項目：USER_TYPE 関連）
@@ -85,6 +86,5 @@ public class User {
         this.createTime = LocalDateTime.now();
         this.updateTime = LocalDateTime.now();
     }
-
 
 }

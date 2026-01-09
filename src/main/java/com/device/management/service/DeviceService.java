@@ -963,7 +963,6 @@ public class DeviceService {
                 .hddDict(DictMapper.toDTO(device.getHddDict()))
                 .hddId(device.getHddDict() != null ? device.getHddDict().getDictId() : null)
                 .selfConfirmDict(DictMapper.toDTO(device.getSelfConfirmDict()))
-                .selfConfirmId(device.getSelfConfirmDict() != null ? device.getSelfConfirmDict().getDictId() : null)
                 .createTime(device.getCreateTime())
                 .creater(device.getCreater())
                 .updateTime(device.getUpdateTime())
