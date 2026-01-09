@@ -33,6 +33,41 @@ public class SamplingCheckController {
     @Autowired
     private SamplingCheckService samplingCheckService;
 
+
+    //liujiale
+    //安全点検リストを取得
+    @GetMapping
+    public ApiResponse<List<SamplingCheckDTO>> getSamplingChecks(
+            @RequestParam int page,                               //ページ番号を取得
+            @RequestParam(defaultValue = "10") int size,         //1ページあたりに表示する情報件数（デフォルトは10件）
+            @RequestParam(required = false) String deviceId,     //デバイスIDでフィルタリング可能
+            @RequestParam(required = false) String userId) {     //ユーザーIDでフィルタリング可能
+
+        try {
+            Page<SamplingCheckDTO> result = samplingCheckService.getSamplingChecks(page, size, deviceId, userId);    //データの取得を試行
+            return ApiResponse.page(
+                    result.getContent(),       // 現在のページのデータリスト
+                    result.getTotalElements(), // 総件数
+                    page,                      // 現在のページ番号
+                    size                       // 1ページあたりの件数
+            );
+        }
+        catch (Exception e) {
+            return ApiResponse.error(500, "查询失败: " + e.getMessage());    //エラー情報を返却
+        }
+    }
+
+    //データを新規追加
+    @PostMapping
+    public ApiResponse<SamplingCheckDTO> addSamplingCheck(@Valid @RequestBody SamplingCheckDTO dto) {
+        try{
+            return ApiResponse.success("添加成功", samplingCheckService.create(dto));
+        }
+        catch (Exception e) {
+            return ApiResponse.error(500, e.getMessage());      //エラー情報を返却
+        }
+    }
+
     //詳細情報の取得
     @GetMapping("/{sampling_id}")
     public ApiResponse<SamplingCheckDTO> securityCheckQueryById(@PathVariable String sampling_id){
