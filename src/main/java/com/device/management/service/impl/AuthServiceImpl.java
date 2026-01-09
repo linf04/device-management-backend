@@ -167,7 +167,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public ApiResponse<Void> changePassword(ChangePasswordRequest req) {
         // 1.JWT を解析し、検証する
-        String token = extractTokenFromRequest();;
+        String token = extractTokenFromRequest();
         if (!jwtTokenProvider.validateToken(token)) {
             return ApiResponse.error(401, "トークンが無効です");
         }
