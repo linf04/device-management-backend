@@ -7,7 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BusinessException extends RuntimeException {
-    // 异常码
     private Integer code;
 
     public BusinessException(int code,String message) {

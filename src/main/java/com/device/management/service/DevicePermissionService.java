@@ -1,7 +1,6 @@
 package com.device.management.service;
 
-import com.device.management.dto.DevicePermissionVo;
-import com.device.management.dto.PermissionsDTO;
+import com.device.management.dto.PermissionInsertDTO;
 import com.device.management.entity.DeviceInfo;
 import com.device.management.entity.DevicePermission;
 import com.device.management.entity.Dict;
@@ -11,8 +10,6 @@ import com.device.management.repository.DeviceRepository;
 import com.device.management.repository.DictRepository;
 import com.device.management.security.JwtTokenProvider;
 import jakarta.annotation.Resource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -30,19 +27,7 @@ public class DevicePermissionService {
     @Resource
     private DictRepository dictRepository;
 
-    public DevicePermissionVo getPermissionVoByPermissionId(String permissionId) {
-        DevicePermissionVo devicePermissionVo = devicePermissionRepository.findPermissionVoByPermissionId(permissionId);
-        if (devicePermissionVo == null) {
-            throw new BusinessException(30001, "権限情報が見つかりません");
-        }
-        return devicePermissionVo;
-    }
-
-    public Page<DevicePermissionVo> getPermissions(Pageable pageable) {
-        return devicePermissionRepository.findAllDevicePermissionVo(pageable);
-    }
-
-    public PermissionsDTO addPermissions(PermissionsDTO permissionsDTO) {
+    public PermissionInsertDTO addPermissions(PermissionInsertDTO permissionsDTO) {
 
 
         DeviceInfo deviceInfo = deviceRepository.findByDeviceId(permissionsDTO.getDeviceId());
@@ -64,64 +49,7 @@ public class DevicePermissionService {
 
         return permissionsDTO;
     }
-
-    public PermissionsDTO updatePermissions(PermissionsDTO permissionsDTO) {
-        DevicePermission devicePermission = devicePermissionRepository.findDevicePermissionByPermissionId(permissionsDTO.getPermissionId());
-        if (devicePermission == null) {
-            throw new BusinessException(30004, "権限情報が見つからず、更新できません");
-        }
-
-        if (permissionsDTO.getDomainStatus() != null) {
-            devicePermission.setDomainStatus(Dict.builder().id(permissionsDTO.getDomainStatus()).build());
-        }
-        if (permissionsDTO.getDomainGroup() != null) {
-            devicePermission.setDomainGroup(permissionsDTO.getDomainGroup());
-        }
-        if (permissionsDTO.getNoDomainReason() != null) {
-            devicePermission.setNoDomainReason(permissionsDTO.getNoDomainReason());
-        }
-        if (permissionsDTO.getSmartitStatus() != null) {
-            devicePermission.setSmartitStatus(Dict.builder().id(permissionsDTO.getSmartitStatus()).build());
-        }
-        if (permissionsDTO.getNoSmartitReason() != null) {
-            devicePermission.setNoSmartitReason(permissionsDTO.getNoSmartitReason());
-        }
-        if (permissionsDTO.getUsbStatus() != null) {
-            devicePermission.setUsbStatus(Dict.builder().id(permissionsDTO.getUsbStatus()).build());
-        }
-        if (permissionsDTO.getUsbReason() != null) {
-            devicePermission.setUsbReason(permissionsDTO.getUsbReason());
-        }
-        if (permissionsDTO.getUsbExpireDate() != null) {
-            devicePermission.setUsbExpireDate(permissionsDTO.getUsbExpireDate());
-        }
-        if (permissionsDTO.getAntivirusStatus() != null) {
-            devicePermission.setAntivirusStatus(Dict.builder().id(permissionsDTO.getAntivirusStatus()).build());
-        }
-        if (permissionsDTO.getNoSymantecReason() != null) {
-            devicePermission.setNoSymantecReason(permissionsDTO.getNoSymantecReason());
-        }
-        if (permissionsDTO.getRemark() != null) {
-            devicePermission.setRemark(permissionsDTO.getRemark());
-        }
-        devicePermission.setUpdater("JS2115");
-        devicePermission.setUpdateTime(Instant.now());
-
-        devicePermissionRepository.save(devicePermission);
-
-        return permissionsDTO;
-    }
-
-    public String deletePermissions(String id) {
-        DevicePermission devicePermission = devicePermissionRepository.findDevicePermissionByPermissionId(id);
-        if (devicePermission == null) {
-            throw new BusinessException(30005, "権限情報が見つかりません");
-        }
-        devicePermissionRepository.delete(devicePermission);
-        return id;
-    }
 }
-
 
 
 /*

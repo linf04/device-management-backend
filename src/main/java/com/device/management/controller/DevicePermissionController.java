@@ -2,16 +2,11 @@ package com.device.management.controller;
 
 import com.device.management.dto.ApiResponse;
 import com.device.management.dto.DevicePermissionExcelVo;
-import com.device.management.dto.DevicePermissionVo;
-import com.device.management.dto.PermissionsDTO;
-import com.device.management.exception.BusinessException;
+import com.device.management.dto.PermissionInsertDTO;
 import com.device.management.service.DevicePermissionExcelService;
 import com.device.management.service.DevicePermissionService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -34,47 +29,10 @@ public class DevicePermissionController {
     @Resource
     private DevicePermissionExcelService devicePermissionExcelService;
 
-    //権限一覧を照会します
-    @GetMapping
-    public ApiResponse<?> getPermissions(@RequestParam(value = "page", required = false, defaultValue = "1") Integer page, @RequestParam(value = "size", required = false, defaultValue = "20") Integer size) {
-        if (page < 0 || size < 0) {
-            throw new BusinessException(12345, "页码参数错误");
-        }
-        Pageable pageable = PageRequest.of(page, size);
-
-        Page<DevicePermissionVo> pageResult = devicePermissionService.getPermissions(pageable);
-        return ApiResponse.page(pageResult.getContent(), pageResult.getTotalElements(), pageable.getPageNumber(), pageable.getPageSize());
-    }
-
     //権限を追加します
     @PostMapping
-    public ApiResponse<?> addPermissions(@RequestBody PermissionsDTO devicePermission) {
+    public ApiResponse<?> addPermissions(@RequestBody PermissionInsertDTO devicePermission) {
         return ApiResponse.success("権限追加成功", devicePermissionService.addPermissions(devicePermission));
-    }
-
-    //権限詳細
-    @GetMapping(value = "/{id}")
-    public ApiResponse<?> getPermissions(@PathVariable("id") String id) {
-        return ApiResponse.success("查询成功", devicePermissionService.getPermissionVoByPermissionId(id));
-    }
-
-    //権限を更新します
-    @PutMapping(value = "/{id}")
-    public ApiResponse<?> updatePermissions(@PathVariable("id") String id,@RequestBody PermissionsDTO permissionsDTO) {
-//        if (id == null || id.isEmpty()){
-//            throw new BusinessException(30010, "参数错误permissionID不能为空");
-//        }
-        if (permissionsDTO == null) {
-            throw new BusinessException(30011, "更新参数不能为空");
-        }
-        permissionsDTO.setPermissionId(id);
-        return ApiResponse.success("更新成功", devicePermissionService.updatePermissions(permissionsDTO));
-    }
-
-    //権限を削除します
-    @DeleteMapping(value = "/{id}")
-    public ApiResponse<?> deletePermissions(@PathVariable("id") String id) {
-        return ApiResponse.success("権限削除成功", devicePermissionService.deletePermissions(id));
     }
 
     //権限をexcelファイル形式でエクスポートします
@@ -85,5 +43,4 @@ public class DevicePermissionController {
         // 导出Excel
         devicePermissionExcelService.exportDevicePermissionList(dataList, response);
     }
-
 }

@@ -1,6 +1,5 @@
 package com.device.management.dto;
 
-import com.device.management.entity.DeviceInfo;
 import lombok.*;
 
 import java.time.Instant;
@@ -11,7 +10,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Getter
 @Setter
-public class PermissionsDTO {
+public class PermissionInsertDTO {
     private String permissionId;
 
     private String deviceId;
