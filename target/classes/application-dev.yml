@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://pgm-uf6ixk92991xy2o5eo.rwlb.rds.aliyuncs.com:5432/postgres
+    username: root_2025
+    password: 10235As##
+
+  sql:
+    init:
+      mode: never
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: true

@@ -7,10 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
 @Repository
-
-public interface SamplingCheckRepository extends JpaRepository<SamplingCheck, String> {
+public interface SamplingCheckRepository  extends JpaRepository<SamplingCheck, String> {
     List<SamplingCheck> findByReportId(String reportId);
 
     Page<SamplingCheck> findByDeviceIdAndUserId(String deviceId, String userId, Pageable pageable);
