@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.data.domain.*;
+import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -33,6 +35,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+
+
 
 /**
  * デバイスサービスクラス
@@ -679,6 +683,129 @@ public class DeviceService {
     @PersistenceContext
     private EntityManager entityManager;
 
+    // デバイス一覧（ページングとフィルタリング）
+    public Page<DeviceDTO> list(String deviceName, String userId, String userName, String project, String devRoom, int page, int size) {
+        // ページ数の調整：ページ番号1から始まる
+        page = page > 0 ? page - 1 : 0;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("deviceId").ascending());
+
+        // デバイスを直接クエリ（ユーザーテーブルをLEFT JOIN）
+        StringBuilder jpql = new StringBuilder(
+                "SELECT d FROM Device d " +
+                        "LEFT JOIN FETCH d.user u " +
+                        "LEFT JOIN FETCH d.osDict " +
+                        "LEFT JOIN FETCH d.memoryDict " +
+                        "LEFT JOIN FETCH d.ssdDict " +
+                        "LEFT JOIN FETCH d.hddDict " +
+                        "LEFT JOIN FETCH d.selfConfirmDict " +
+                        "WHERE 1=1 "
+        );
+
+        if (StringUtils.hasText(deviceName)) {
+            jpql.append("AND d.computerName LIKE :deviceName ");
+        }
+        if (StringUtils.hasText(userId)) {
+            jpql.append("AND d.userId = :userId ");
+        }
+        if (StringUtils.hasText(userName)) {
+            jpql.append("AND u.userName LIKE :userName ");
+        }
+        if (StringUtils.hasText(project)) {
+            jpql.append("AND d.project LIKE :project ");
+        }
+        if (StringUtils.hasText(devRoom)) {
+            jpql.append("AND d.devRoom LIKE :devRoom ");
+        }
+
+        TypedQuery<Device> query = entityManager.createQuery(jpql.toString(), Device.class);
+
+        if (StringUtils.hasText(deviceName)) {
+            query.setParameter("deviceName", "%" + deviceName + "%");
+        }
+        if (StringUtils.hasText(userId)) {
+            query.setParameter("userId", userId);
+        }
+        if (StringUtils.hasText(userName)) {
+            query.setParameter("userName", "%" + userName + "%");
+        }
+        if (StringUtils.hasText(project)) {
+            query.setParameter("project", "%" + project + "%");
+        }
+        if (StringUtils.hasText(devRoom)) {
+            query.setParameter("devRoom", "%" + devRoom + "%");
+        }
+
+        // ページング処理
+        int totalRows = getTotalCount(deviceName, userId, userName, project, devRoom);
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+
+        List<Device> devices = query.getResultList();
+        if (devices.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        // 関連データをバッチでロード
+        List<String> deviceIds = devices.stream()
+                .map(d -> d.getDeviceId().trim())
+                .collect(Collectors.toList());
+
+        Map<String, List<DeviceIp>> ipMap = getDeviceIpMap(deviceIds);
+        Map<String, List<Monitor>> monitorMap = getDeviceMonitorMap(deviceIds);
+
+        // DTOに変換
+        List<DeviceDTO> dtoList = devices.stream()
+                .map(device -> toDTOWithRelations(device, ipMap, monitorMap))
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, totalRows);
+    }
+
+    // 総レコード数を取得
+    private int getTotalCount(String deviceName, String userId, String userName, String project, String devRoom) {
+        StringBuilder jpql = new StringBuilder(
+                "SELECT COUNT(d) FROM Device d " +
+                        "LEFT JOIN d.user u " +
+                        "WHERE 1=1 "
+        );
+
+        if (StringUtils.hasText(deviceName)) {
+            jpql.append("AND d.computerName LIKE :deviceName ");
+        }
+        if (StringUtils.hasText(userId)) {
+            jpql.append("AND d.userId = :userId ");
+        }
+        if (StringUtils.hasText(userName)) {
+            jpql.append("AND u.userName LIKE :userName ");
+        }
+        if (StringUtils.hasText(project)) {
+            jpql.append("AND d.project LIKE :project ");
+        }
+        if (StringUtils.hasText(devRoom)) {
+            jpql.append("AND d.devRoom LIKE :devRoom ");
+        }
+
+        TypedQuery<Long> query = entityManager.createQuery(jpql.toString(), Long.class);
+
+        if (StringUtils.hasText(deviceName)) {
+            query.setParameter("deviceName", "%" + deviceName + "%");
+        }
+        if (StringUtils.hasText(userId)) {
+            query.setParameter("userId", userId);
+        }
+        if (StringUtils.hasText(userName)) {
+            query.setParameter("userName", "%" + userName + "%");
+        }
+        if (StringUtils.hasText(project)) {
+            query.setParameter("project", "%" + project + "%");
+        }
+        if (StringUtils.hasText(devRoom)) {
+            query.setParameter("devRoom", "%" + devRoom + "%");
+        }
+
+        return query.getSingleResult().intValue();
+    }
+
     // UserServiceで呼び出し用：デバイス名またはユーザーIDでフィルタリングしてユニークなユーザーIDリストを取得
     public List<String> findUserIdsByCondition(String deviceName, String userId) {
         StringBuilder jpql = new StringBuilder("SELECT DISTINCT d.userId FROM Device d WHERE d.userId IS NOT NULL ");
@@ -704,11 +831,13 @@ public class DeviceService {
         if (!StringUtils.hasText(deviceId)) return null;
 
         String jpql = "SELECT d FROM Device d " +
+                "LEFT JOIN FETCH d.user u " +
                 "LEFT JOIN FETCH d.osDict " +
                 "LEFT JOIN FETCH d.memoryDict " +
                 "LEFT JOIN FETCH d.ssdDict " +
                 "LEFT JOIN FETCH d.hddDict " +
                 "LEFT JOIN FETCH d.selfConfirmDict " +
+                "LEFT JOIN FETCH u.userTypeDict " +
                 "WHERE TRIM(d.deviceId) = :deviceId";
 
         try {
@@ -736,6 +865,7 @@ public class DeviceService {
         if (userIds == null || userIds.isEmpty()) return Collections.emptyMap();
 
         String jpql = "SELECT d FROM Device d " +
+                "LEFT JOIN FETCH d.user u " +
                 "LEFT JOIN FETCH d.osDict " +
                 "LEFT JOIN FETCH d.memoryDict " +
                 "LEFT JOIN FETCH d.ssdDict " +
@@ -797,27 +927,71 @@ public class DeviceService {
             return mDto;
         }).collect(Collectors.toList()));
 
+        // 集計情報を設定
+        dto.setIpCount(ips.size());
+        dto.setMonitorCount(monitors.size());
+
         return dto;
     }
 
     private DeviceDTO toBasicDTO(Device device) {
-        return DeviceDTO.builder()
+        DeviceDTO dto = DeviceDTO.builder()
                 .deviceId(device.getDeviceId().trim())
                 .userId(device.getUserId())
+                .userInfo(device.getUser() != null ? UserDTO.builder()
+                        .userId(device.getUser().getUserId())
+                        .deptId(device.getUser().getDeptId())
+                        .name(device.getUser().getName())
+                        .userType(DictMapper.toDTO(device.getUser().getUserTypeDict()))
+                        .createTime(device.getUser().getCreateTime())
+                        .creater(device.getUser().getCreater())
+                        .updateTime(device.getUser().getUpdateTime())
+                        .updater(device.getUser().getUpdater())
+                        .build() : null)
                 .deviceModel(device.getDeviceModel())
                 .computerName(device.getComputerName())
                 .loginUsername(device.getLoginUsername())
                 .project(device.getProject())
+                .devRoom(device.getDevRoom())
+                .remark(device.getRemark())
                 .osDict(DictMapper.toDTO(device.getOsDict()))
+                .osId(device.getOsDict() != null ? device.getOsDict().getDictId() : null)
                 .memoryDict(DictMapper.toDTO(device.getMemoryDict()))
+                .memoryId(device.getMemoryDict() != null ? device.getMemoryDict().getDictId() : null)
                 .ssdDict(DictMapper.toDTO(device.getSsdDict()))
+                .ssdId(device.getSsdDict() != null ? device.getSsdDict().getDictId() : null)
                 .hddDict(DictMapper.toDTO(device.getHddDict()))
+                .hddId(device.getHddDict() != null ? device.getHddDict().getDictId() : null)
                 .selfConfirmDict(DictMapper.toDTO(device.getSelfConfirmDict()))
+                .selfConfirmId(device.getSelfConfirmDict() != null ? device.getSelfConfirmDict().getDictId() : null)
                 .createTime(device.getCreateTime())
                 .creater(device.getCreater())
                 .updateTime(device.getUpdateTime())
                 .updater(device.getUpdater())
                 .build();
+
+        // ハードウェア構成サマリーを生成
+        StringBuilder summary = new StringBuilder();
+        if (dto.getOsDict() != null && dto.getOsDict().getDictItemName() != null) {
+            summary.append("操作系统: ").append(dto.getOsDict().getDictItemName()).append(" | ");
+        }
+        if (dto.getMemoryDict() != null && dto.getMemoryDict().getDictItemName() != null) {
+            summary.append("内存: ").append(dto.getMemoryDict().getDictItemName()).append(" | ");
+        }
+        if (dto.getSsdDict() != null && dto.getSsdDict().getDictItemName() != null) {
+            summary.append("固态硬盘: ").append(dto.getSsdDict().getDictItemName()).append(" | ");
+        }
+        if (dto.getHddDict() != null && dto.getHddDict().getDictItemName() != null) {
+            summary.append("机械硬盘: ").append(dto.getHddDict().getDictItemName());
+        }
+
+        // 末尾の" | "を削除
+        if (summary.length() > 0 && summary.toString().endsWith(" | ")) {
+            summary.setLength(summary.length() - 3);
+        }
+        dto.setHardwareSummary(summary.toString());
+
+        return dto;
     }
 
     // プライベートヘルパークエリ、関連データを処理
