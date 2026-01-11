@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-//EntityとDTOの相互変換用
 @Mapper(componentModel = "spring")
 public interface SamplingCheckMapper {
     SamplingCheckDTO convertToDto(SamplingCheck samplingCheck);
@@ -19,6 +18,8 @@ public interface SamplingCheckMapper {
     }
 
     @Mapping(target = "samplingId", ignore = true)
+    @Mapping(target = "updateTime", ignore = true)
+    @Mapping(target = "createTime", ignore = true)
     void updateEntityFromDto(SamplingCheckDTO dto, @MappingTarget SamplingCheck entity);
 }
 

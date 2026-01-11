@@ -24,11 +24,9 @@ public class SamplingCheckDTO {
     private String deviceId;
     @NotNull
     private LocalDate updateDate; //报表导出日期
-    @NotNull
-    private LocalDateTime updateTime;
-    @NotNull
-    private LocalDateTime createTime;
 
+    private LocalDateTime updateTime;
+    private LocalDateTime createTime;
     private String updater;
     private String creater;
     private Boolean installedSoftware;

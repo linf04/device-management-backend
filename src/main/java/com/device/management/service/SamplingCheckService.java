@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -24,6 +25,7 @@ public class SamplingCheckService {
         if(!samplingCheckRepository.existsById(samplingId))  throw new RuntimeException("記録が存在しないため、更新できません");
         SamplingCheck entity = samplingCheckRepository.findById(samplingId).get();
         samplingCheckMapper.updateEntityFromDto(dto,entity);
+        entity.setUpdateTime(LocalDateTime.now());
         SamplingCheck saved = samplingCheckRepository.save(entity);
 
         return samplingCheckMapper.convertToDto(saved);
@@ -33,6 +35,8 @@ public class SamplingCheckService {
     public SamplingCheckDTO create(SamplingCheckDTO dto) {
         if(samplingCheckRepository.existsById(dto.getSamplingId()))  throw new RuntimeException("レコードは既に存在しているため、新規追加できません");
         SamplingCheck entity = samplingCheckMapper.convertToEntity(dto);
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateTime(LocalDateTime.now());
         SamplingCheck saved = samplingCheckRepository.save(entity);
 
         return samplingCheckMapper.convertToDto(saved);
@@ -56,7 +60,7 @@ public class SamplingCheckService {
     public void delete(String samplingId) {
         log.info("delete sampling check {}", samplingId);
         if (!samplingCheckRepository.existsById(samplingId)) {
-            throw new RuntimeException("Not found");
+            throw new RuntimeException("記録が存在しません");
         }
         samplingCheckRepository.deleteById(samplingId);
     }
