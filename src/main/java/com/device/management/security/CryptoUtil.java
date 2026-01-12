@@ -3,10 +3,8 @@ package com.device.management.security;
 import com.device.management.dto.ChangePasswordRequest;
 import com.device.management.dto.LoginRequest;
 import com.device.management.exception.DecryptionException;
-import com.device.management.exception.ResourceNotFoundException;
 import com.device.management.exception.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -27,8 +25,11 @@ public class CryptoUtil {
                 // フロントエンドから送信されるのは暗号化されたパスワードで、バックエンドで復号する必要があります
             }
             if (dto instanceof ChangePasswordRequest req) {
-                req.setCurrentPassword(CryptoUtil.decrypt(req.getCurrentPassword()));
-                req.setNewPassword(CryptoUtil.decrypt(req.getNewPassword())); // 現在のパスワードを復号
+                // currentPasswordがnullの場合はスキップ（管理者がパスワードを変更する場合）
+                if (req.getCurrentPassword() != null) {
+                    req.setCurrentPassword(CryptoUtil.decrypt(req.getCurrentPassword()));
+                }
+                req.setNewPassword(CryptoUtil.decrypt(req.getNewPassword())); // 新しいパスワードを復号
             }
         } catch (Exception e) {
             log.error("暗号化解除失敗", e);
