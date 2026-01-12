@@ -2,6 +2,7 @@ package com.device.management.service;
 
 import com.device.management.dto.ApiResponse;
 import com.device.management.dto.DictItemDto;
+import com.device.management.dto.DictTypeGroup;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,8 +15,7 @@ import java.util.List;
 @Service
 public interface DictService {
     /** 辞書タイプのコードに基づいて辞書項目を検索する（sortで昇順に並べ替え）
-    * @param dictTypeCode
     * @return 辞書項目リスト
     */
-    ApiResponse<List<DictItemDto>> getDictItemsByTypeCode(String dictTypeCode);
+    ApiResponse<List<DictTypeGroup>> getDictItems();
 }

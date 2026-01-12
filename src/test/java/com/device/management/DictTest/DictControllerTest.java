@@ -3,6 +3,7 @@ package com.device.management.DictTest;
 import com.device.management.controller.DictController;
 import com.device.management.dto.ApiResponse;
 import com.device.management.dto.DictItemDto;
+import com.device.management.dto.DictTypeGroup;
 import com.device.management.service.DictService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,11 +41,13 @@ class DictControllerTest {
     @WithMockUser
     void testGetDictItemsByTypeCode_Success() throws Exception {
         // テストデータの準備
-        List<DictItemDto> mockLists = List.of(new DictItemDto(1L, "使用可", 1));
-        ApiResponse<List<DictItemDto>> expectedResponse = ApiResponse.success(mockLists);
+        List<DictTypeGroup> mockLists = List.of(new DictTypeGroup(
+                "USER_TYPE",List.of(new DictItemDto(1L, "一般ユーザー",1))
+        ));
+        ApiResponse<List<DictTypeGroup>> expectedResponse = ApiResponse.success(mockLists);
 
         // サービス層の返却をシミュレート
-        when(dictService.getDictItemsByTypeCode("USER_TYPE")).thenReturn(expectedResponse);
+        when(dictService.getDictItems()).thenReturn(expectedResponse);
 
         // リクエストを実行して結果を検証
         mockMvc.perform(get("/dict/items")
@@ -58,11 +61,11 @@ class DictControllerTest {
     @WithMockUser
     void testGetDictItemsByTypeCode_EmptyDictTypeCode() throws Exception {
         // サービス層の返却エラーをシミュレート
-        ApiResponse<List<DictItemDto>> errorResponse = ApiResponse.error(
+        ApiResponse<List<DictTypeGroup>> errorResponse = ApiResponse.error(
             40001,
             "dictTypeCodeは文字列で指定してください"
         );
-        when(dictService.getDictItemsByTypeCode("")).thenReturn(errorResponse);
+        when(dictService.getDictItems()).thenReturn(errorResponse);
 
         // 空のパラメータをテスト
         mockMvc.perform(get("/dict/items")
