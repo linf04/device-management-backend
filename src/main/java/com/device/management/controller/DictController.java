@@ -2,6 +2,7 @@ package com.device.management.controller;
 
 import com.device.management.dto.ApiResponse;
 import com.device.management.dto.DictItemDto;
+import com.device.management.dto.DictTypeGroup;
 import com.device.management.service.DictService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +27,8 @@ public class DictController {
     private DictService dictService;
 
     @GetMapping("/items")
-    public ApiResponse<List<DictItemDto>> getDictItemsByTypeCode(
-            @NotBlank(message = "dictTypeCodeは必須です") @RequestParam String dictTypeCode) {
-        return dictService.getDictItemsByTypeCode(dictTypeCode);
+    public ApiResponse<List<DictTypeGroup>> getDictItems() {
+        return dictService.getDictItems();
     }
 
 }
