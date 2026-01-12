@@ -5,18 +5,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * カスタム例外クラス
+ * 全ての認証例外
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResourceNotFoundException extends RuntimeException {
+public class AllException extends RuntimeException {
     private int code;
     private String message;
 
-    public ResourceNotFoundException(String message) {
+    public AllException(String message) {
         super(message);
-        this.code = 404;
+        this.code = 500;
         this.message = message;
     }
 }

@@ -1,16 +1,21 @@
 package com.device.management.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 登录请求
+ * ログインリクエスト
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class LoginRequest {
+    @NotBlank(message = "社員番号は必須です。")
     private String userId;
+
+    @NotBlank(message = "パスワード（暗号化）は必須です")
     private String password;
 }

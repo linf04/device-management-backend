@@ -1,46 +1,41 @@
 package com.device.management.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
+import lombok.*;
 import java.time.LocalDateTime;
 
-/**
- * 用户实体类
- */
+@Entity
+@Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "USERS")
+@Builder
 public class User {
-
     @Id
-    @Column(name = "USER_ID", length = 20)
-    private String userId;
+    @Column(name = "user_id")
+    private String userId; // 従業員番号
 
-    @Column(name = "USER_NAME", length = 100, nullable = false)
-    private String userName;
+    @Column(name = "dept_id")
+    private String deptId; // 部門
 
-    @Column(name = "DEPARTMENT_CODE", length = 20, nullable = false)
-    private String departmentCode;
+    @Column(name = "name")
+    private String name; // 氏名
 
-    @Column(name = "USER_LEVEL", length = 20, nullable = false)
-    private String userLevel;
+    @Column(name = "user_type_id")
+    private Long userTypeId; // ユーザータイプID（dictテーブルと関連）
 
-    @Column(name = "PASSWORD_HASH", length = 200, nullable = false)
-    private String passwordHash;
+    @Column(name = "password")
+    private String password; // 暗号化後のパスワード
 
-    @CreationTimestamp
-    @Column(name = "CREATED_DATE")
-    private LocalDateTime createdDate;
+    @Column(name = "create_time")
+    private LocalDateTime createTime; // 作成時間
 
-    @UpdateTimestamp
-    @Column(name = "UPDATED_DATE")
-    private LocalDateTime updatedDate;
+    @Column(name = "creater")
+    private String creater; // 作成者
 
+    @Column(name = "update_time")
+    private LocalDateTime updateTime; // 更新時間
+
+    @Column(name = "updater")
+    private String updater; // 更新者
 }
