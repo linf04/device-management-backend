@@ -1,10 +1,8 @@
 package com.device.management.controller;
 
 import com.device.management.dto.ApiResponse;
-import com.device.management.dto.DictItemDto;
 import com.device.management.dto.DictTypeGroup;
 import com.device.management.service.DictService;
-import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
