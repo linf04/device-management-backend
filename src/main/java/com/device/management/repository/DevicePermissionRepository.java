@@ -23,10 +23,10 @@ public interface DevicePermissionRepository extends JpaRepository<DevicePermissi
     List<DevicePermissionExcelVo> findAllDevicePermissionExcel();
 
     //デバイスIDで検索
-    List<DevicePermission> findByDeviceId(String deviceId);
+//    List<DevicePermission> findByDeviceId(String deviceId);
 
     // 特定の権限IDが存在するか確認する
-    boolean existsByPermissionId(String permissionId);
+//    boolean existsByPermissionId(String permissionId);
 
     //permission_idに基づいて単一の権限を検索する
     @Query("SELECT dp FROM DevicePermission dp WHERE dp.permissionId = :permissionId")

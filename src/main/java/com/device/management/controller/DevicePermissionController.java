@@ -7,8 +7,10 @@ import com.device.management.dto.PermissionsListDTO;
 import com.device.management.entity.DeviceInfo;
 import com.device.management.entity.User;
 import com.device.management.repository.DevicePermissionRepository;
+import com.device.management.repository.DeviceUsagePermissionRepository;
 import com.device.management.service.DevicePermissionExcelService;
 import com.device.management.service.DevicePermissionService;
+import com.device.management.service.DeviceUsagePermissionService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.util.StringUtils;
@@ -34,7 +36,7 @@ public class DevicePermissionController {
     @Resource
     private DevicePermissionExcelService devicePermissionExcelService;
     @Resource
-    private DevicePermissionRepository devicePermissionRepository;
+    private DeviceUsagePermissionService deviceUsagePermissionService;
 
     //権限一覧を照会します
     @GetMapping
@@ -79,29 +81,9 @@ public class DevicePermissionController {
      * OASドキュメントで指定された削除インターフェース - パス: /permissions/{id}
      */
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> deletePermission(@PathVariable("id") String permissionId) {
-        System.out.println("=== デバイス権限承認レコードを削除 ===");
-        System.out.println("権限ID: " + permissionId);
+    public ApiResponse<?> deletePermission(@PathVariable("id") String permissionId) {
+        deviceUsagePermissionService.deletePermissionById(permissionId);
 
-        try {
-            // 1. レコードの存在確認
-            if (devicePermissionRepository.existsById(permissionId)) {
-                // 2. レコードが存在する場合：削除処理実行
-                devicePermissionRepository.deleteById(permissionId);
-                System.out.println("削除成功: " + permissionId);
-                // 成功レスポンス返却（200 OK）
-                return ApiResponse.success("デバイス権限承認の削除に成功しました");
-            } else {
-                // 3. レコードが存在しない場合：404エラー返却
-                System.out.println("レコードが見つかりません: " + permissionId);
-                return ApiResponse.error(404, "デバイス権限レコードが存在しません: " + permissionId);
-            }
-
-        } catch (Exception e) {
-            // 4. 例外発生時：500エラー返却 + エラーログ出力
-            System.err.println("デバイス権限の削除時に例外が発生しました: " + e.getMessage());
-            e.printStackTrace();
-            return ApiResponse.error(500, "削除に失敗しました: " + e.getMessage());
-        }
+        return ApiResponse.success("権限削除成功",permissionId);
     }
 }

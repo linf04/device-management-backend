@@ -3,15 +3,11 @@ package com.device.management.service;
 import com.device.management.dto.ApiResponse;
 import com.device.management.dto.PermissionInsertDTO;
 import com.device.management.dto.PermissionsListDTO;
-import com.device.management.entity.DeviceInfo;
-import com.device.management.entity.DevicePermission;
-import com.device.management.entity.Dict;
-import com.device.management.entity.User;
+import com.device.management.entity.*;
 import com.device.management.exception.BusinessException;
-import com.device.management.repository.DevicePermissionRepository;
-import com.device.management.repository.DeviceRepository;
-import com.device.management.repository.DictRepository;
-import com.device.management.repository.UserRepository;
+import com.device.management.exception.ConflictException;
+import com.device.management.exception.ResourceNotFoundException;
+import com.device.management.repository.*;
 import com.device.management.security.JwtTokenProvider;
 import jakarta.annotation.Resource;
 import jakarta.persistence.criteria.*;
@@ -42,6 +38,8 @@ public class DevicePermissionService {
     private DictRepository dictRepository;
     @Resource
     private UserRepository userRepository;
+    @Resource
+    DeviceUsagePermissionRepository deviceUsagePermissionRepository;
 
     public PermissionInsertDTO addPermissions(PermissionInsertDTO permissionsDTO) {
         DeviceInfo deviceInfo = deviceRepository.findByDeviceId(permissionsDTO.getDeviceId());
@@ -214,5 +212,32 @@ public class DevicePermissionService {
         dto.setUpdater(permission.getUpdater());
 
         return dto;
+    }
+
+
+    public void deletePermissionById(Long id) {
+
+        System.out.println("デバイス使用権限の削除開始: id=" + id);
+
+        // 1. APIのLong型IDをデータベースのString型permissionIdにマッピング
+        String permissionId = String.valueOf(id);
+
+        // 2. 権限の存在チェック
+        DeviceUsagePermission permission = deviceUsagePermissionRepository.findById(permissionId)
+                .orElseThrow(() -> new ResourceNotFoundException("権限が存在しません: " + id));
+
+        // 3. 論理削除済みかチェック
+        // if (permission.getIsDeleted() != null && permission.getIsDeleted() == 1) {
+        //   throw new ResourceNotFoundException("権限は既に削除されています: " + id);
+        //}
+
+        // 4. TODO: 関連リソースのチェック（他のテーブルをクエリする必要あり）
+        // 模擬：権限IDに"TEST"が含まれている場合、関連があるものとみなす
+        if (permissionId.contains("TEST")) {
+            throw new ConflictException("権限は既にリソースに紐づいているため、削除できません: " + id);
+        }
+
+        // 5. 物理削除の実行
+        deviceUsagePermissionRepository.delete(permission);
     }
 }
