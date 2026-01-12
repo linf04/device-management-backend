@@ -23,7 +23,7 @@ public class AuthController {
     private AuthService authService;
 
     /**
-     * 用户登录
+     * ユーザーログイン
      */
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@RequestBody LoginRequest loginRequest) {

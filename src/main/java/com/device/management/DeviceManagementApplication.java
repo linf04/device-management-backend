@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 /**
- * 设备管理系统 Spring Boot 主应用程序
+ * デバイス管理システムSpring Bootマスターアプリケーション
  */
 @SpringBootApplication
 public class DeviceManagementApplication {

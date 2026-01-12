@@ -29,23 +29,23 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     /**
-     * 用户登录 | ユーザーのログイン
+     * ユーザーのログイン
      */
     public LoginResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByUserId(loginRequest.getUserId());
         if (user == null) {
-            throw new UnauthorizedException("用户名或密码不正确");
+            throw new UnauthorizedException("ユーザー名またはパスワードが正しくありません");
         }
 
-        // 验证密码 | パスワードを確認
+        //パスワードを確認
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new UnauthorizedException("用户名或密码不正确");
+            throw new UnauthorizedException("ユーザー名またはパスワードが正しくありません");
         }
 
-        // 生成 JWT Token | JWTトークンを生成
+        //  JWTトークンを生成
         String token = jwtTokenProvider.generateToken(user.getUserId());
 
-        // 构建响应 | 応答の構築
+        // 応答の構築
         UserDto userDTO = convertToDTO(user);
         LoginResponse response = new LoginResponse();
         response.setToken(token);
@@ -57,7 +57,7 @@ public class AuthService {
 
 
     /**
-     * 转换为 DTO | DTOに変換
+     *  DTOに変換
      */
     private UserDto convertToDTO(User user) {
         UserDto dto = new UserDto();

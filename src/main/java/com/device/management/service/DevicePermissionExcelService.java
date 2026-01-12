@@ -184,31 +184,31 @@ public class DevicePermissionExcelService {
     private int buildExcelTemplate(Sheet sheet, Map<String, CellStyle> styles, List<DevicePermissionExcelVo> dataList) {
         int rowNum = 0;
 
-        // 第一行：编号信息 | 番号情報
+        // 1行目： 番号情報
 //        Row row0 = sheet.createRow(rowNum++);
 //        createMergedCell(sheet, row0, 0, 16, "编号", styles.get("title"));
 //        createCell(row0, 17, "ISMSFM0502-1", styles.get("center"));
 
-        // 第二行：版权和更新日期 | 著作権と更新日
+        //  2行目：著作権と更新日
 //        Row row1 = sheet.createRow(rowNum++);
 //        createMergedCell(sheet, row1, 0, 16, "江苏海隆软件有限公司 版权所有 社外秘", styles.get("title"));
 //        createCell(row1, 17, "更新日期", styles.get("header"));
 //        createCell(row1, 18, new SimpleDateFormat("yyyy-MM-dd").format(new Date()), styles.get("center"));
 
-        // 第三行：主标题  | 主題
+        // 3行目： 主題
 //        Row row2 = sheet.createRow(rowNum++);
 //        createMergedCell(sheet, row2, 0, 18, "设备使用权限清单", styles.get("title"));
 
-        // 第四行：部门   | 部門
+        // 4行目： 部門
 //        Row row3 = sheet.createRow(rowNum++);
 //        createMergedCell(sheet, row3, 0, 18, "部门", styles.get("title"));
 
-        // 第五行：部门代码（这里应该根据数据动态显示）   | 部門コード（データに応じて動的に表示）
+        // 5行目：部門コード（データに応じて動的に表示）
 //        Row row4 = sheet.createRow(rowNum++);
 //        String deptCode = dataList.isEmpty() ? "" : dataList.get(0).getDepartmentCode();
 //        createMergedCell(sheet, row4, 0, 18, deptCode, styles.get("title"));
 
-        // 第六行：大表头（合并单元格）   | 大見出し（結合セル）
+        //  6行目：大見出し（結合セル）
         Row row5 = sheet.createRow(rowNum++);
         createCell(row5, 0, "编号", styles.get("header"));
         createMergedCell(sheet, row5, 1, 4, "设备", styles.get("header"));
@@ -219,7 +219,7 @@ public class DevicePermissionExcelService {
         createMergedCell(sheet, row5, 17, 18, "防病毒", styles.get("header"));
         createCell(row5, 19, "备注", styles.get("header"));
 
-        // 第七行：详细表头 | 詳細見出し
+        // 詳細見出し
         Row row6 = sheet.createRow(rowNum++);
         String[] headers = {"", "设备编号", "电脑名", "显示器", "IP地址", "工号", "姓名", "级别", "登录用户名", "域名", "域内组名", "不加域理由", "SmartIT状态", "不安装SmartIT理由", "USB状态", "USB开通理由", "使用截止日期", "连接状态", "无Symantec理由", ""};
 
@@ -229,7 +229,7 @@ public class DevicePermissionExcelService {
             cell.setCellStyle(styles.get("header"));
         }
 
-        // 填充数据行    | データ行を埋める
+        // データ行を埋める
         rowNum = fillDataRows(sheet, styles, dataList, rowNum);
 
         return rowNum;
@@ -246,49 +246,41 @@ public class DevicePermissionExcelService {
             DevicePermissionExcelVo item = dataList.get(i);
             Row row = sheet.createRow(rowNum++);
 
-            // 编号   | 番号
+            //番号
             createCell(row, 0, String.valueOf(i + 1), styles.get("center"));
 
-            // 设备信息 | 設備情報
+            //設備情報
             createCell(row, 1, item.getDeviceId(), styles.get("data"));
             createCell(row, 2, item.getComputerName(), styles.get("data"));
             createCell(row, 3, item.getMonitorName() != null ? item.getMonitorName().toString() : "", styles.get("data"));
             createCell(row, 4, item.getIpAddress() != null ? item.getIpAddress().toString() : "", styles.get("data"));
 
-            // 使用者信息    | 使用者情報
+            //使用者情報
             createCell(row, 5, item.getUserId(), styles.get("center"));
             createCell(row, 6, item.getName(), styles.get("center"));
             createCell(row, 7, item.getDeptId(), styles.get("center"));
             createCell(row, 8, item.getLoginUsername(), styles.get("data"));
 
-            // 域信息    | 域情報
+            //域情報
             createCell(row, 9, getDictName(item.getDomainStatusId()), styles.get("center"));
             createCell(row, 10, item.getDomainGroup(), styles.get("data"));
             createCell(row, 11, item.getNoDomainReason(), styles.get("data"));
 
-            // SmartIT信息    | SmartIT情報
+            //SmartIT情報
             createCell(row, 12, getDictName(item.getSmartitStatusId()), styles.get("center"));
             createCell(row, 13, item.getNoSmartitReason(), styles.get("data"));
 
-            // USB信息    | USB情報
+            //USB情報
             createCell(row, 14, getDictName(item.getUsbStatusId()), styles.get("center"));
             createCell(row, 15, item.getUsbReason(), styles.get("data"));
             createCell(row, 16, item.getUseExpireDate() != null ? item.getUseExpireDate().format(dateFormatter)  // LocalDate 直接调用 format 方法
                     : "", styles.get("date"));
 
-            // 其他信息    | その他情報
+            //その他情報
             createCell(row, 17, getDictName(item.getAntivirusStatusId()), styles.get("center"));
             createCell(row, 18, item.getNoSymantecReason(), styles.get("data"));
             createCell(row, 19, item.getRemark(), styles.get("remark"));
 
-            // 如果有多个IP，可能需要添加额外的行（这里简化处理）    | 複数IPがある場合、追加行が必要（ここは簡略化処理）
-//            if (item.getIpAddress() != null && item.getIpAddress().contains("\n")) {
-//                String[] ips = item.getIpAddress().split("\n");
-//                for (int j = 1; j < ips.length; j++) {
-//                    Row extraRow = sheet.createRow(rowNum++);
-//                    createCell(extraRow, 3, ips[j].trim(), styles.get("data"));
-//                }
-//            }
         }
 
         return rowNum;

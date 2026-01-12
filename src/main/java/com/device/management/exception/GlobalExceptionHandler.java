@@ -12,14 +12,14 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 /**
- * 全局异常处理
+ * グローバル例外処理
  */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     /**
-     * 处理资源不找到异常
+     * 処理リソースに例外が見つかりません
      */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<?>> handleResourceNotFoundException(
@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 处理参数验证异常
+     * 処理パラメータ検証例外
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<?>> handleValidationException(
@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
 
 
     /**
-    * 业务异常
+    * 認証失敗例外の処理
     * */
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<String>> handleBusinessException(
@@ -66,13 +66,13 @@ public class GlobalExceptionHandler {
 
 
     /**
-     * 处理所有其他异常
+     * 他のすべての例外の処理
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleGlobalException(
             Exception ex, WebRequest request) {
         log.error("Unexpected error: {}", ex.getMessage(), ex);
-        ApiResponse<?> response = ApiResponse.error(500, "服务器内部错误");
+        ApiResponse<?> response = ApiResponse.error(500, "サーバ内部エラー");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

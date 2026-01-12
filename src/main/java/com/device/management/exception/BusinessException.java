@@ -15,7 +15,7 @@ public class BusinessException extends RuntimeException {
 
     public BusinessException(String message) {
         super(message);
-        this.code = 400; // 默认业务异常码
+        this.code = 400; // デフォルトのビジネス例外コード
     }
 
     public BusinessException(int code, String message) {

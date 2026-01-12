@@ -19,15 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
-/*功能	方法	端点	参数/请求体	说明
-列表	GET	/permissions	?page=1&size=10&deviceId=xxx&userId=xxx	-
-详情	GET	/permissions/{id}	-	-
-新增	POST	/permissions	Permission 对象	-
-编辑	PUT	/permissions/{id}	Permission 对象	-
-导出	GET	/permissions/export	-	返回 Excel 文件
-删除 DELETE	/permissions/{id}	-	-
-*/
-
 @RestController
 @RequestMapping("/permissions")
 public class DevicePermissionController {
@@ -46,7 +37,7 @@ public class DevicePermissionController {
             @RequestParam(required = false) String userId,
             @RequestParam(required = false) String deviceId) {
 
-        // 构建查询条件
+        // クエリ条件を構築する
         User user = null;
         if (StringUtils.hasText(userId)) {
             user = new User();
@@ -71,9 +62,9 @@ public class DevicePermissionController {
     //権限をexcelファイル形式でエクスポートします
     @GetMapping(value = "/export")
     public void exportExcel(HttpServletResponse response) throws IOException {
-        // 这里应该从数据库获取数据
+        // データベースからデータを取得する
         List<DevicePermissionExcelVo> dataList = devicePermissionExcelService.getDataFromDatabase();
-        // 导出Excel
+        // Excelのエクスポート
         devicePermissionExcelService.exportDevicePermissionList(dataList, response);
     }
 
