@@ -17,6 +17,7 @@ public interface SamplingCheckMapper {
         return page.map(this::convertToDto);
     }
 
+    //主キー、更新時間、作成時間はバックエンドで管理されます
     @Mapping(target = "samplingId", ignore = true)
     @Mapping(target = "updateTime", ignore = true)
     @Mapping(target = "createTime", ignore = true)

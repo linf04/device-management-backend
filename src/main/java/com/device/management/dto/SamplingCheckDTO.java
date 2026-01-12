@@ -12,21 +12,21 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SamplingCheckDTO {
-    @NotNull(message = "主键不能为空")
-    private String samplingId;
-    @NotNull(message = "抽检ID不能为空")
-    private String reportId;
-    @NotNull
-    private String userId;
-    @NotNull
-    private String name;
-    @NotNull
-    private String deviceId;
-    @NotNull
-    private LocalDate updateDate; //报表导出日期
+    private String samplingId;  //主キー、データベースの非空フィールド、バックエンドで管理
 
-    private LocalDateTime updateTime;
-    private LocalDateTime createTime;
+    @NotNull(message = "レポートIDは空にできません")
+    private String reportId;
+    @NotNull(message = "ユーザーIDは空にできません" )
+    private String userId;
+    @NotNull(message = "ユーザー名は空にできません")
+    private String name;
+    @NotNull(message = "機器番号は空にできません")
+    private String deviceId;
+    @NotNull(message = "レポートのエクスポート時間は空にできません")
+    private LocalDate updateDate;
+
+    private LocalDateTime updateTime;  // 更新時間、データベースの非空フィールド、バックエンドで管理
+    private LocalDateTime createTime;  // 作成時間、データベースの非空フィールド、バックエンドで管理
     private String updater;
     private String creater;
     private Boolean installedSoftware;

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -33,10 +34,10 @@ public class SamplingCheckService {
 
     //追加方法
     public SamplingCheckDTO create(SamplingCheckDTO dto) {
-        if(samplingCheckRepository.existsById(dto.getSamplingId()))  throw new RuntimeException("レコードは既に存在しているため、新規追加できません");
         SamplingCheck entity = samplingCheckMapper.convertToEntity(dto);
-        entity.setUpdateTime(LocalDateTime.now());
+        entity.setSamplingId(UUID.randomUUID().toString().replace("-",""));
         entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
         SamplingCheck saved = samplingCheckRepository.save(entity);
 
         return samplingCheckMapper.convertToDto(saved);
@@ -60,7 +61,7 @@ public class SamplingCheckService {
     public void delete(String samplingId) {
         log.info("delete sampling check {}", samplingId);
         if (!samplingCheckRepository.existsById(samplingId)) {
-            throw new RuntimeException("記録が存在しません");
+            throw new RuntimeException("Not found");
         }
         samplingCheckRepository.deleteById(samplingId);
     }
