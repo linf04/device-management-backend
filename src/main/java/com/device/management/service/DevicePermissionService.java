@@ -64,7 +64,7 @@ public class DevicePermissionService {
 
     public ApiResponse<List<PermissionsListDTO>> getPermissions(Integer page, Integer size, User user, DeviceInfo deviceInfo) {
         // ページネーションパラメータを検証する
-        if (page == null || page < 0) {
+        if (page == null || page <= 0) {
             page = 1;
         }
         if (size == null || size <= 0) {
