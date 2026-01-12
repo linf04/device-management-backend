@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
- * 认证服务
+ * 認証サービス
  */
 @Slf4j
 @Service

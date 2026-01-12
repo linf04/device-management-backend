@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 登录请求
+ * ログインリクエスト
  */
 @Data
 @NoArgsConstructor

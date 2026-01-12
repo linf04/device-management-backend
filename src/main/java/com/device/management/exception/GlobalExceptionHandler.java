@@ -12,42 +12,42 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 /**
- * 全局异常处理
+ * グローバル例外ハンドリング
  */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     /**
-     * 处理资源不找到异常
+     * リソースが見つからない例外を処理
      */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<?>> handleResourceNotFoundException(
             ResourceNotFoundException ex, WebRequest request) {
-        log.error("Resource not found: {}", ex.getMessage());
+        log.error("リソースが見つかりません: {}", ex.getMessage());
         ApiResponse<?> response = ApiResponse.error(404, ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     /**
-     * 处理参数验证异常
+     * パラメーター検証例外を処理
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<?>> handleValidationException(
             MethodArgumentNotValidException ex, WebRequest request) {
         String message = ex.getBindingResult().getFieldError().getDefaultMessage();
-        log.error("Validation error: {}", message);
-        ApiResponse<?> response = ApiResponse.error(400, "参数验证失败: " + message);
+        log.error("バリデーションエラー: {}", message);
+        ApiResponse<?> response = ApiResponse.error(400, "パラメーター検証に失敗しました: " + message);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     /**
-     * 处理认证失败异常
+     * 認証失敗例外を処理
      */
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ApiResponse<?>> handleUnauthorizedException(
             UnauthorizedException ex, WebRequest request) {
-        log.error("Unauthorized: {}", ex.getMessage());
+        log.error("認証失敗: {}", ex.getMessage());
         ApiResponse<?> response = ApiResponse.error(401, ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
 
 
     /**
-     * 处理所有其他异常
+     * その他のすべての例外を処理
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleGlobalException(
