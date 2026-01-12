@@ -106,4 +106,3 @@ dist
 # Misc
 *.orig
 /src/test/
-/src/main/resources/
