@@ -1,13 +1,15 @@
 package com.device.management.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-
 
 @Data
 @NoArgsConstructor
@@ -29,15 +31,21 @@ public class DeviceFullDTO {
     private Long memoryId; //メモリID
     private Long ssdId; //SSDID
     private Long hddId; //HDDID
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createTime; // 作成日時
     private String creater; //作成者
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updateTime; // 更新日時
     private String updater; //更新者 update
 
     // monitor
+    @JsonProperty("monitors")
     private List<MonitorDTO> monitors; // モニターリスト
 //    private String monitorName; // 'モニター名
 //    private Integer monitorId; // モニター番号 update
 
     //ip
+    @JsonProperty("deviceIps")
     private List<DeviceIpDTO> ipAddresses; // IPアドレスリスト
 //    private String ipAddress; //IPアドレス
 //    private Integer ipId; //IP番号 update
@@ -46,4 +54,55 @@ public class DeviceFullDTO {
     private String name;
     private String deptId;
 
+    // 辞書項目
+    @JsonProperty("selfConfirm")
+    private DictDTO selfConfirmDict; // 本人確認辞書項目
+    @JsonProperty("os")
+    private DictDTO osDict; // オペレーティングシステム辞書項目
+    @JsonProperty("memory")
+    private DictDTO memoryDict; // メモリ辞書項目
+    @JsonProperty("ssd")
+    private DictDTO ssdDict; // SSD辞書項目
+    @JsonProperty("hdd")
+    private DictDTO hddDict; // HDD辞書項目
+
+    
+
+    // 内部クラス: モニター情報 (MonitorDTOから統合)
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class MonitorInfo {
+        private Integer monitorId; // モニター番号
+        private String monitorName; // モニター名
+        private String deviceId; // 機器番号
+        
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        private LocalDateTime createTime; // 作成日時
+        private String creater; // 作成者
+        
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        private LocalDateTime updateTime; // 更新日時
+        private String updater; // 更新者
+    }
+
+    // 内部クラス: デバイスIP情報 (DeviceIpDTOから統合)
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class DeviceIpInfo {
+        private Integer ipId; // IP番号
+        private String ipAddress; // IPアドレス
+        private String deviceId; // 機器番号
+        
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        private LocalDateTime createTime; // 作成日時
+        private String creater; // 作成者
+        
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        private LocalDateTime updateTime; // 更新日時
+        private String updater; // 更新者
+    }
 }

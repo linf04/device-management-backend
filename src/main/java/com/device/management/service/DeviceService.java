@@ -704,98 +704,8 @@ public class DeviceService {
             }
         }
     }
-    
-    /**
-     * デバイス一覧取得（ページングとフィルタリング対応）
-     */
-    public Page<DeviceDTO> list(String deviceName, String userId, String userName, String project, String devRoom, int page, int size) {
-        // ページ番号調整：1始まりから0始まりに変換
-        page = page > 0 ? page - 1 : 0;
-        Pageable pageable = PageRequest.of(page, size, Sort.by("deviceId").ascending());
 
-        // 条件に合致するデバイス一覧を取得
-        List<Device> devices = deviceRepository.findByConditions(deviceName, userId, userName, project, devRoom);
-        
-        // 総レコード数を取得
-        Long totalCount = deviceRepository.countByConditions(deviceName, userId, userName, project, devRoom);
-        
-        if (devices.isEmpty()) {
-            return Page.empty(pageable);
-        }
-
-        // ページング処理
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), devices.size());
-        List<Device> pagedDevices = devices.subList(start, end);
-
-        // 関連データを一括ロード
-        List<String> deviceIds = pagedDevices.stream()
-                .map(d -> d.getDeviceId().trim())
-                .collect(Collectors.toList());
-
-        Map<String, List<DeviceIp>> ipMap = getDeviceIpMap(deviceIds);
-        Map<String, List<Monitor>> monitorMap = getDeviceMonitorMap(deviceIds);
-
-        // DTOに変換
-        List<DeviceDTO> dtoList = pagedDevices.stream()
-                .map(device -> toDTOWithRelations(device, ipMap, monitorMap))
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(dtoList, pageable, totalCount);
-    }
-
-    /**
-     * デバイス詳細情報取得
-     */
-    public DeviceDTO detail(String deviceId) {
-        if (!StringUtils.hasText(deviceId)) return null;
-
-        try {
-            Device device = deviceRepository.findByDeviceIdWithDicts(deviceId.trim());
-            if (device == null) {
-                log.error("デバイス詳細が見つかりません: {}", deviceId);
-                return null;
-            }
-
-            List<String> ids = Collections.singletonList(device.getDeviceId().trim());
-            return toDTOWithRelations(device, getDeviceIpMap(ids), getDeviceMonitorMap(ids));
-        } catch (Exception e) {
-            log.error("デバイス詳細クエリ中にエラーが発生しました: {}", deviceId, e);
-            return null;
-        }
-    }
-
-    /**
-     * 単一ユーザーの全デバイスを取得
-     */
-    public List<DeviceDTO> getDevicesByUserId(String userId) {
-        if (!StringUtils.hasText(userId)) return new ArrayList<>();
-        Map<String, List<DeviceDTO>> resultMap = getDeviceMapByUserIds(Collections.singletonList(userId.trim()));
-        return resultMap.getOrDefault(userId.trim(), new ArrayList<>());
-    }
-
-    /**
-     * バッチ処理：ユーザーIDリストに対応するデバイスマッピングを取得
-     */
-    public Map<String, List<DeviceDTO>> getDeviceMapByUserIds(List<String> userIds) {
-        if (userIds == null || userIds.isEmpty()) return Collections.emptyMap();
-
-        List<Device> allDevices = deviceRepository.findByUserIdsWithDicts(userIds);
-        if (allDevices.isEmpty()) return Collections.emptyMap();
-
-        List<String> deviceIds = allDevices.stream()
-                .map(d -> d.getDeviceId().trim())
-                .collect(Collectors.toList());
-
-        Map<String, List<DeviceIp>> ipMap = getDeviceIpMap(deviceIds);
-        Map<String, List<Monitor>> monitorMap = getDeviceMonitorMap(deviceIds);
-
-        return allDevices.stream()
-                .map(dev -> toDTOWithRelations(dev, ipMap, monitorMap))
-                .collect(Collectors.groupingBy(DeviceDTO::getUserId));
-    }
-
-    /**
+        /**
      * 全ての開発室名を取得（重複排除）
      */
     public List<String> getAllDevRooms() {
@@ -834,28 +744,111 @@ public class DeviceService {
             return Collections.emptyList();
         }
     }
-
+    
     /**
-     * UserService呼び出し用：デバイス名またはユーザーIDでフィルタリングしてユニークなユーザーIDリストを取得
+     * デバイス一覧取得（ページングとフィルタリング対応）
      */
-    public List<String> findUserIdsByCondition(String deviceName, String userId) {
-        return deviceRepository.findUserIdsByCondition(deviceName, userId);
+    public Page<DeviceFullDTO> list(String deviceName, String userId, String userName, String project, String devRoom, int page, int size) {
+        // ページ番号調整：1始まりから0始まりに変換
+        page = page > 0 ? page - 1 : 0;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("deviceId").ascending());
+
+        // 条件に合致するデバイス一覧を取得
+        List<Device> devices = deviceRepository.findByConditions(deviceName, userId, userName, project, devRoom);
+        
+        // 総レコード数を取得
+        Long totalCount = deviceRepository.countByConditions(deviceName, userId, userName, project, devRoom);
+        
+        if (devices.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        // ページング処理
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), devices.size());
+        List<Device> pagedDevices = devices.subList(start, end);
+
+        // 関連データを一括ロード
+        List<String> deviceIds = pagedDevices.stream()
+                .map(d -> d.getDeviceId().trim())
+                .collect(Collectors.toList());
+
+        Map<String, List<DeviceIp>> ipMap = getDeviceIpMap(deviceIds);
+        Map<String, List<Monitor>> monitorMap = getDeviceMonitorMap(deviceIds);
+
+        // DTOに変換
+        List<DeviceFullDTO> dtoList = pagedDevices.stream()
+                .map(device -> toFullDTOWithRelations(device, ipMap, monitorMap))
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, totalCount);
     }
 
     /**
-     * デバイスエンティティを関連データを含むDTOに変換（フィールド欠落防止）
+     * デバイス詳細情報取得
      */
-    private DeviceDTO toDTOWithRelations(Device device, Map<String, List<DeviceIp>> ipMap, Map<String, List<Monitor>> monitorMap) {
-        DeviceDTO dto = toBasicDTO(device);
+    public DeviceFullDTO detail(String deviceId) {
+        if (!StringUtils.hasText(deviceId)) return null;
+
+        try {
+            Device device = deviceRepository.findByDeviceIdWithDicts(deviceId.trim());
+            if (device == null) {
+                log.error("デバイス詳細が見つかりません: {}", deviceId);
+                return null;
+            }
+
+            List<String> ids = Collections.singletonList(device.getDeviceId().trim());
+            return toFullDTOWithRelations(device, getDeviceIpMap(ids), getDeviceMonitorMap(ids));
+        } catch (Exception e) {
+            log.error("デバイス詳細クエリ中にエラーが発生しました: {}", deviceId, e);
+            return null;
+        }
+    }
+
+    /**
+     * 単一ユーザーの全デバイスを取得
+     */
+    public List<DeviceFullDTO> getDevicesByUserId(String userId) {
+        if (!StringUtils.hasText(userId)) return new ArrayList<>();
+        Map<String, List<DeviceFullDTO>> resultMap = getDeviceMapByUserIds(Collections.singletonList(userId.trim()));
+        return resultMap.getOrDefault(userId.trim(), new ArrayList<>());
+    }
+
+    /**
+     * バッチ処理：ユーザーIDリストに対応するデバイスマッピングを取得
+     */
+    public Map<String, List<DeviceFullDTO>> getDeviceMapByUserIds(List<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) return Collections.emptyMap();
+
+        List<Device> allDevices = deviceRepository.findByUserIdsWithDicts(userIds);
+        if (allDevices.isEmpty()) return Collections.emptyMap();
+
+        List<String> deviceIds = allDevices.stream()
+                .map(d -> d.getDeviceId().trim())
+                .collect(Collectors.toList());
+
+        Map<String, List<DeviceIp>> ipMap = getDeviceIpMap(deviceIds);
+        Map<String, List<Monitor>> monitorMap = getDeviceMonitorMap(deviceIds);
+
+        return allDevices.stream()
+                .map(dev -> toFullDTOWithRelations(dev, ipMap, monitorMap))
+                .collect(Collectors.groupingBy(DeviceFullDTO::getUserId));
+    }
+
+    /**
+     * デバイスエンティティを関連データを含むDTOに変換（DeviceFullDTO用）
+     */
+    private DeviceFullDTO toFullDTOWithRelations(Device device, Map<String, List<DeviceIp>> ipMap, Map<String, List<Monitor>> monitorMap) {
+        DeviceFullDTO dto = toFullBasicDTO(device);
         String key = device.getDeviceId().trim();
 
         // IPリストを設定
         List<DeviceIp> ips = ipMap.getOrDefault(key, new ArrayList<>());
-        dto.setDeviceIps(ips.stream().map(ip -> {
+        dto.setIpAddresses(ips.stream().map(ip -> {
             DeviceIpDTO ipDto = new DeviceIpDTO();
             ipDto.setIpId(ip.getIpId());
             ipDto.setIpAddress(ip.getIpAddress());
-            ipDto.setDeviceId(key); // 関連ID
+            ipDto.setDeviceId(key);
             ipDto.setCreateTime(ip.getCreateTime());
             ipDto.setCreater(ip.getCreater());
             ipDto.setUpdateTime(ip.getUpdateTime());
@@ -869,7 +862,7 @@ public class DeviceService {
             MonitorDTO mDto = new MonitorDTO();
             mDto.setMonitorId(m.getMonitorId());
             mDto.setMonitorName(m.getMonitorName());
-            mDto.setDeviceId(key); // 関連ID
+            mDto.setDeviceId(key);
             mDto.setCreateTime(m.getCreateTime());
             mDto.setCreater(m.getCreater());
             mDto.setUpdateTime(m.getUpdateTime());
@@ -881,24 +874,21 @@ public class DeviceService {
     }
 
     /**
-     * デバイスエンティティを基本情報のみのDTOに変換
+     * デバイスエンティティを基本情報のみのDTOに変換（DeviceFullDTO用）
      */
-    private DeviceDTO toBasicDTO(Device device) {
-        DeviceDTO dto = DeviceDTO.builder()
+    private DeviceFullDTO toFullBasicDTO(Device device) {
+        DeviceFullDTO dto = DeviceFullDTO.builder()
                 .deviceId(device.getDeviceId().trim())
                 .userId(device.getUserId())
-                .userInfo(device.getUser() != null ? UserDto.builder()
-                        .userId(device.getUser().getUserId())
-                        .deptId(device.getUser().getDeptId())
-                        .name(device.getUser().getName())
-                        .userType(DictMapper.toDTO(device.getUser().getUserTypeDict()))
-                        .build() : null)
+                .name(device.getUser() != null ? device.getUser().getName() : null)
+                .deptId(device.getUser() != null ? device.getUser().getDeptId() : null)
                 .deviceModel(device.getDeviceModel())
                 .computerName(device.getComputerName())
                 .loginUsername(device.getLoginUsername())
                 .project(device.getProject())
                 .devRoom(device.getDevRoom())
                 .remark(device.getRemark())
+                .selfConfirmDict(DictMapper.toDTO(device.getSelfConfirmDict()))
                 .osDict(DictMapper.toDTO(device.getOsDict()))
                 .osId(device.getOsDict() != null ? device.getOsDict().getDictId() : null)
                 .memoryDict(DictMapper.toDTO(device.getMemoryDict()))
@@ -907,11 +897,12 @@ public class DeviceService {
                 .ssdId(device.getSsdDict() != null ? device.getSsdDict().getDictId() : null)
                 .hddDict(DictMapper.toDTO(device.getHddDict()))
                 .hddId(device.getHddDict() != null ? device.getHddDict().getDictId() : null)
-                .selfConfirmDict(DictMapper.toDTO(device.getSelfConfirmDict()))
                 .createTime(device.getCreateTime())
                 .creater(device.getCreater())
                 .updateTime(device.getUpdateTime())
                 .updater(device.getUpdater())
+                .monitors(new ArrayList<>())  // 默认空列表
+                .ipAddresses(new ArrayList<>())  // 默认空列表，注意字段名保持一致
                 .build();
 
         return dto;

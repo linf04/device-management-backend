@@ -71,7 +71,7 @@ public class DeviceController {
     //アクセス例：GET /api/devices?devRoom=M2-A-01
     //アクセス例：GET /api/devices
     @GetMapping
-    public ApiResponse<Page<DeviceDTO>> list(
+    public ApiResponse<Page<DeviceFullDTO>> list(
             @RequestParam(required = false) String deviceName,
             @RequestParam(required = false) String userId,
             @RequestParam(required = false) String userName,
@@ -88,14 +88,15 @@ public class DeviceController {
     //デバイス詳細
     //アクセス例：GET /api/devices/deviceId
     @GetMapping("/{deviceId}")
-    public ApiResponse<DeviceDTO> detail(
+    public ApiResponse<DeviceFullDTO> detail(
             @PathVariable String deviceId
     ) {
         return ApiResponse.success(
                 deviceService.detail(deviceId)
         );
     }
-        // 全ての重複しない開発室名を取得
+
+    // 全ての重複しない開発室名を取得
     // アクセス例：GET /api/devices/devroom
     @GetMapping("/devroom")
     public ApiResponse<List<String>> getAllDevRooms() {
