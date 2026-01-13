@@ -6,8 +6,6 @@ import com.device.management.dto.PermissionInsertDTO;
 import com.device.management.dto.PermissionsListDTO;
 import com.device.management.entity.DeviceInfo;
 import com.device.management.entity.User;
-import com.device.management.repository.DevicePermissionRepository;
-import com.device.management.repository.DeviceUsagePermissionRepository;
 import com.device.management.service.DevicePermissionExcelService;
 import com.device.management.service.DevicePermissionService;
 import com.device.management.service.DeviceUsagePermissionService;
@@ -75,6 +73,6 @@ public class DevicePermissionController {
     public ApiResponse<?> deletePermission(@PathVariable("id") String permissionId) {
         deviceUsagePermissionService.deletePermissionById(permissionId);
 
-        return ApiResponse.success("権限削除成功",permissionId);
+        return ApiResponse.success("権限削除成功", permissionId);
     }
 }

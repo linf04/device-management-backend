@@ -16,10 +16,6 @@ import java.util.List;
 public class ApiResponse<T> {
     private int code;
     private String message;
-//    private T data;
-//    private Long total;
-//    private Integer page;
-//    private Integer size;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T data;
     @JsonInclude(JsonInclude.Include.NON_NULL)

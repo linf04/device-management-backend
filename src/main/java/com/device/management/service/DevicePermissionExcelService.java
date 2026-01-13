@@ -100,23 +100,6 @@ public class DevicePermissionExcelService {
     private Map<String, CellStyle> createStyles(Workbook workbook) {
         Map<String, CellStyle> styles = new java.util.HashMap<>();
 
-        // 1. タイトルパターン(背景は紺色、白は太字です)
-//        CellStyle titleStyle = workbook.createCellStyle();
-//        Font titleFont = workbook.createFont();
-//        titleFont.setBold(true);
-//        titleFont.setFontHeightInPoints((short) 14);
-//        titleFont.setColor(IndexedColors.WHITE.getIndex());
-//        titleStyle.setFont(titleFont);
-//        titleStyle.setAlignment(HorizontalAlignment.CENTER);
-//        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-//        titleStyle.setFillForegroundColor(IndexedColors.ROYAL_BLUE.getIndex());
-//        titleStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-//        titleStyle.setBorderBottom(BorderStyle.THIN);
-//        titleStyle.setBorderTop(BorderStyle.THIN);
-//        titleStyle.setBorderLeft(BorderStyle.THIN);
-//        titleStyle.setBorderRight(BorderStyle.THIN);
-//        styles.put("title", titleStyle);
-
         // 2.表題のスタイル（背景は灰色、太の字）
         CellStyle headerStyle = workbook.createCellStyle();
         Font headerFont = workbook.createFont();
@@ -183,30 +166,6 @@ public class DevicePermissionExcelService {
      */
     private int buildExcelTemplate(Sheet sheet, Map<String, CellStyle> styles, List<DevicePermissionExcelVo> dataList) {
         int rowNum = 0;
-
-        // 1行目： 番号情報
-//        Row row0 = sheet.createRow(rowNum++);
-//        createMergedCell(sheet, row0, 0, 16, "编号", styles.get("title"));
-//        createCell(row0, 17, "ISMSFM0502-1", styles.get("center"));
-
-        //  2行目：著作権と更新日
-//        Row row1 = sheet.createRow(rowNum++);
-//        createMergedCell(sheet, row1, 0, 16, "江苏海隆软件有限公司 版权所有 社外秘", styles.get("title"));
-//        createCell(row1, 17, "更新日期", styles.get("header"));
-//        createCell(row1, 18, new SimpleDateFormat("yyyy-MM-dd").format(new Date()), styles.get("center"));
-
-        // 3行目： 主題
-//        Row row2 = sheet.createRow(rowNum++);
-//        createMergedCell(sheet, row2, 0, 18, "设备使用权限清单", styles.get("title"));
-
-        // 4行目： 部門
-//        Row row3 = sheet.createRow(rowNum++);
-//        createMergedCell(sheet, row3, 0, 18, "部门", styles.get("title"));
-
-        // 5行目：部門コード（データに応じて動的に表示）
-//        Row row4 = sheet.createRow(rowNum++);
-//        String deptCode = dataList.isEmpty() ? "" : dataList.get(0).getDepartmentCode();
-//        createMergedCell(sheet, row4, 0, 18, deptCode, styles.get("title"));
 
         //  6行目：大見出し（結合セル）
         Row row5 = sheet.createRow(rowNum++);
@@ -285,49 +244,6 @@ public class DevicePermissionExcelService {
 
         return rowNum;
     }
-
-//    /**
-//     * 説明と署名行を追加する
-//     */
-//    private int addExplanationRows(Sheet sheet, Map<String, CellStyle> styles, int startRow) {
-//        int rowNum = startRow;
-//
-//        // 空行
-//        sheet.createRow(rowNum++);
-//
-//        // 説明文
-//        Row explanationRow = sheet.createRow(rowNum++);
-//        String explanation = "※1.复查表单流程\n①各部门：确认实际数据与此表单的一致性\n②网络设备科：复查，确认\n\n※2.各部门负责此表单的日常维护";
-//        createMergedCell(sheet, explanationRow, 0, 15, explanation, styles.get("data"));
-//        createCell(explanationRow, 16, "信息安全员", styles.get("center"));
-//        createCell(explanationRow, 17, "设备管理科", styles.get("center"));
-//
-//        // 署名行1
-//        Row signRow1 = sheet.createRow(rowNum++);
-//        createMergedCell(sheet, signRow1, 0, 15, "", styles.get("data"));
-//        createCell(signRow1, 16, "王邵赟\n2025/8/29", styles.get("center"));
-//        createCell(signRow1, 17, "夏军\n2025/8/29", styles.get("center"));
-//
-//        // 署名行2
-//        Row signRow2 = sheet.createRow(rowNum++);
-//        createMergedCell(sheet, signRow2, 0, 15, "", styles.get("data"));
-//        createCell(signRow2, 16, "（盖章）", styles.get("center"));
-//        createCell(signRow2, 17, "（盖章）", styles.get("center"));
-//
-//        // 署名行3
-//        Row signRow3 = sheet.createRow(rowNum++);
-//        createMergedCell(sheet, signRow3, 0, 15, "", styles.get("data"));
-//        createCell(signRow3, 16, "…", styles.get("center"));
-//        createCell(signRow3, 17, "（盖章）", styles.get("center"));
-//
-//        // 署名行4
-//        Row signRow4 = sheet.createRow(rowNum++);
-//        createMergedCell(sheet, signRow4, 0, 15, "", styles.get("data"));
-//        createCell(signRow4, 16, "（盖章）", styles.get("center"));
-//        createCell(signRow4, 17, "（盖章）", styles.get("center"));
-//
-//        return rowNum;
-//    }
 
     /**
      * 結合セルを作成する

@@ -28,17 +28,9 @@ public class DeviceUsagePermissionService {
      * @param id 権限ID（APIレイヤーのLong型）
      */
     public void deletePermissionById(String permissionId) {
-        // 1. APIのLong型IDをデータベースのString型permissionIdにマッピング
-//        permissionId = String.valueOf(permissionId);
-
         // 2. 権限の存在チェック
         DevicePermission permission = permissionRepository.findById(permissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("権限が存在しません: " + permissionId));
-
-        // 3. 論理削除済みかチェック
-        // if (permission.getIsDeleted() != null && permission.getIsDeleted() == 1) {
-        //   throw new ResourceNotFoundException("権限は既に削除されています: " + id);
-        //}
 
         // 4. TODO: 関連リソースのチェック（他のテーブルをクエリする必要あり）
         // 模擬：権限IDに"TEST"が含まれている場合、関連があるものとみなす

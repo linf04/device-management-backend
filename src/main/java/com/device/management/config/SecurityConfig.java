@@ -52,8 +52,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/auth/login", "/auth/logout").permitAll()
-                                .requestMatchers("/**").permitAll()  //本番環境に上げる時に元のコードに戻す
+                        .requestMatchers("/**").permitAll()  //本番環境に上げる時に元のコードに戻す
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

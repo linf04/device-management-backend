@@ -57,9 +57,7 @@ public class DevicePermissionService {
         String permissionId = UUID.randomUUID().toString();
 
         devicePermissionRepository.save(DevicePermission.builder().permissionId(permissionId).device(deviceInfo).domainStatus(Dict.builder().id(permissionInsertDTO.getDomainStatus()).build()).domainGroup(permissionInsertDTO.getDomainGroup()).noDomainReason(permissionInsertDTO.getNoDomainReason()).smartitStatus(Dict.builder().id(permissionInsertDTO.getSmartitStatus()).build()).noSmartitReason(permissionInsertDTO.getNoSmartitReason()).usbStatus(Dict.builder().id(permissionInsertDTO.getUsbStatus()).build()).usbReason(permissionInsertDTO.getUsbReason()).usbExpireDate(permissionInsertDTO.getUsbExpireDate()).antivirusStatus(Dict.builder().id(permissionInsertDTO.getAntivirusStatus()).build()).noSymantecReason(permissionInsertDTO.getNoSymantecReason()).remark(permissionInsertDTO.getRemark()).createTime(LocalDateTime.now())
-//                        .creater(jwtTokenProvider.getUserIdFromToken("eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJKUzIxMTUiLCJzdWIiOiJKUzIxMTUiLCJpYXQiOjE3Njc1OTE4NzgsImV4cCI6MTc2NzY3ODI3OH0.FV_jjUTSWvYEeTYgFtb2iPkalIz48NK_2lTgi-HtWVk"))
                 .creater("JS2115").updateTime(LocalDateTime.now())
-//                        .updater(jwtTokenProvider.getUserIdFromToken("eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJKUzIxMTUiLCJzdWIiOiJKUzIxMTUiLCJpYXQiOjE3Njc1OTE4NzgsImV4cCI6MTc2NzY3ODI3OH0.FV_jjUTSWvYEeTYgFtb2iPkalIz48NK_2lTgi-HtWVk"))
                 .updater("JS2115").build());
         permissionInsertDTO.setPermissionId(permissionId);
         return permissionInsertDTO;
@@ -228,11 +226,6 @@ public class DevicePermissionService {
         // 2. 権限の存在チェック
         DevicePermission permission = deviceUsagePermissionRepository.findById(permissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("権限が存在しません: " + id));
-
-        // 3. 論理削除済みかチェック
-        // if (permission.getIsDeleted() != null && permission.getIsDeleted() == 1) {
-        //   throw new ResourceNotFoundException("権限は既に削除されています: " + id);
-        //}
 
         // 4. TODO: 関連リソースのチェック（他のテーブルをクエリする必要あり）
         // 模擬：権限IDに"TEST"が含まれている場合、関連があるものとみなす
