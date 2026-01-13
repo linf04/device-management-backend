@@ -13,3 +13,4 @@ public interface DictRepository extends JpaRepository<Dict, Long> {
 
     List<Dict> findByDictTypeCode(String dictTypeCode);
 }
+

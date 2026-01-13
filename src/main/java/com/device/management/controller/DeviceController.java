@@ -20,7 +20,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/devices")
+@RequestMapping("/devices")
 @RequiredArgsConstructor
 public class DeviceController {
 

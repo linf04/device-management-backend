@@ -12,9 +12,10 @@ import java.util.List;
 /**
  * ユーザエンティティ（usersテーブル）
  */
-@Data
+
 @Entity
 @Table(name = "users")
+@Data
 @AllArgsConstructor
 @Builder
 public class User {
@@ -37,7 +38,7 @@ public class User {
 
     @CreationTimestamp
     @Column(name = "create_time")
-    private LocalDateTime createTime; // 作成日時
+    private LocalDateTime createTime; // 作成時間
 
     @Column(name = "creater", length = 100)
     private String creater; // 作成者

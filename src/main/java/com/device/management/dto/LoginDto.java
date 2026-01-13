@@ -14,4 +14,3 @@ public class LoginDto {
     private String token;
     private UserDto userDTO;
 }
-
