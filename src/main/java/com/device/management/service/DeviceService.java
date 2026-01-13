@@ -51,9 +51,6 @@ public class DeviceService {
     private DeviceRepository deviceRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private MonitorRepository monitorRepository;
 
     @Autowired
@@ -74,16 +71,6 @@ public class DeviceService {
                 .creater(deviceFullDTO.getCreater()).updater(deviceFullDTO.getUpdater())
                 .build();
 
-        MonitorDTO monitorDTO = MonitorDTO.builder()
-                .monitorName(deviceFullDTO.getMonitorName()).deviceId(deviceFullDTO.getDeviceId())
-                .creater(deviceFullDTO.getCreater()).updater(deviceFullDTO.getUpdater())
-                .build();
-
-        DeviceIpDTO deviceIpDTO = DeviceIpDTO.builder()
-                .ipAddress(deviceFullDTO.getIpAddress()).deviceId(deviceFullDTO.getDeviceId())
-                .creater(deviceFullDTO.getCreater()).updater(deviceFullDTO.getUpdater())
-                .build();
-
 
         // device insert
         List<Device> deviceList = deviceRepository.findByDeviceId(deviceDTO.getDeviceId());
@@ -100,39 +87,77 @@ public class DeviceService {
 
 
         // monitor insert
-        Monitor monitorReturn = convertMonitorToEntity(monitorDTO);
-        if (!monitorRepository.existsByMonitorName(monitorDTO.getMonitorName())) {
+        List<Monitor> monitorReturns = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(deviceFullDTO.getMonitors())) {
+            for (MonitorDTO monitorDTO : deviceFullDTO.getMonitors()) {
 
-            Monitor monitor = convertMonitorToEntity(monitorDTO);
+                monitorDTO.setDeviceId(deviceFullDTO.getDeviceId());
+                monitorDTO.setCreater(deviceFullDTO.getCreater());
+                monitorDTO.setUpdater(deviceFullDTO.getUpdater());
 
-            monitor.setCreateTime(LocalDateTime.now());
-            monitor.setUpdateTime(LocalDateTime.now());
+                Monitor monitor = convertMonitorToEntity(monitorDTO);
 
-            monitorReturn = monitorRepository.save(monitor);
+                if (!monitorRepository.existsByMonitorName(monitorDTO.getMonitorName())) {
+
+                    monitor.setCreateTime(LocalDateTime.now());
+                    monitor.setUpdateTime(LocalDateTime.now());
+
+                    Monitor monitorReturn = monitorRepository.save(monitor);
+                    monitorReturns.add(monitorReturn);
+                } else { // exsit
+
+                    Monitor monitorDB = monitorRepository.findByMonitorName(monitorDTO.getMonitorName());
+
+                    if(!monitorDB.getDeviceId().equals(monitorDTO.getDeviceId())) {
+                        //                System.out.println(monitorDB.getMonitorId() + "++++++++++" + monitorDTO.getMonitorId()); // 1  null
+                        throw new IllegalStateException("Monitor " + monitorDTO.getMonitorName() + " is used by " + monitorDB.getDeviceId() + "!");
+                    }
+
+                    monitorReturns.add(monitorDB);
+                }
+            }
         }
 
         // ip insert
-        // ipチェック
-        String ipAddress = deviceIpDTO.getIpAddress();
-        ipAddress = ipAddress.trim();
+        List<DeviceIp> ipReturns = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(deviceFullDTO.getIpAddresses())) {
+            for (DeviceIpDTO deviceIpDTO : deviceFullDTO.getIpAddresses()) {
 
-        try {
-            InetAddress.getByName(ipAddress);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("IPアドレスの形式が無効です: " + ipAddress);
-        }
+                deviceIpDTO.setDeviceId(deviceFullDTO.getDeviceId());
+                deviceIpDTO.setCreater(deviceFullDTO.getCreater());
+                deviceIpDTO.setUpdater(deviceFullDTO.getUpdater());
 
-        // insert
-        DeviceIp deviceIpReturn = convertDeviceIpToEntity(deviceIpDTO);
-        if (!deviceIpRepository.existsByIpAddress(deviceIpDTO.getIpAddress())) {
+                // ipチェック
+                String ipAddress = deviceIpDTO.getIpAddress();
+                ipAddress = ipAddress.trim();
 
-            DeviceIp deviceIp = convertDeviceIpToEntity(deviceIpDTO);
+                try {
+                    InetAddress.getByName(ipAddress);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("IPアドレスの形式が無効です: " + ipAddress);
+                }
 
+                // insert
+                if (!deviceIpRepository.existsByIpAddress(deviceIpDTO.getIpAddress())) {
 
-            deviceIp.setCreateTime(LocalDateTime.now());
-            deviceIp.setUpdateTime(LocalDateTime.now());
+                    DeviceIp deviceIp = convertDeviceIpToEntity(deviceIpDTO);
 
-            deviceIpReturn = deviceIpRepository.save(deviceIp);
+                    deviceIp.setCreateTime(LocalDateTime.now());
+                    deviceIp.setUpdateTime(LocalDateTime.now());
+
+                    DeviceIp deviceIpReturn = deviceIpRepository.save(deviceIp);
+                    ipReturns.add(deviceIpReturn);
+                } else {
+
+                    DeviceIp deviceIpDB = deviceIpRepository.findByIpAddress(deviceIpDTO.getIpAddress());
+
+                    if(!deviceIpDB.getDeviceId().equals(deviceIpDTO.getDeviceId())) {
+                        throw new IllegalStateException("Ip " + deviceIpDTO.getIpAddress() + " is used by " + deviceIpDB.getDeviceId() + "!");
+                    }
+
+                    ipReturns.add(deviceIpDB);
+                }
+            }
         }
 
         DeviceFullDTO deviceFullDtoReturn = DeviceFullDTO.builder()
@@ -142,7 +167,8 @@ public class DeviceService {
                 .remark(deviceReturn.getRemark()).selfConfirmId(deviceReturn.getSelfConfirmId()).osId(deviceReturn.getOsId())
                 .memoryId(deviceReturn.getMemoryId()).ssdId(deviceReturn.getSsdId()).hddId(deviceReturn.getHddId())
                 .creater(deviceReturn.getCreater()).updater(deviceReturn.getUpdater())
-                .monitorName(monitorReturn.getMonitorName()).ipAddress(deviceIpReturn.getIpAddress())
+                .monitors(convertMonitorsToDTOList(monitorReturns))
+                .ipAddresses(convertDeviceIpsToDTOList(ipReturns))
                 .name(deviceFullDTO.getName()).deptId(deviceFullDTO.getDeptId())
                 .build();
 
@@ -153,6 +179,7 @@ public class DeviceService {
     @Transactional
     public DeviceFullDTO updateDeviceById(String deviceId, DeviceFullDTO deviceFullDTO) {
 
+//        System.out.println("!!!!!!!!!!!!" + deviceFullDTO + "!!!!!!!!!!!!");
 
         deviceFullDTO.setDeviceId(deviceId); // 渡されたパラメータのdeviceIdの後ろに使用されます
 
@@ -162,19 +189,6 @@ public class DeviceService {
                 .project(deviceFullDTO.getProject()).devRoom(deviceFullDTO.getDevRoom()).userId(deviceFullDTO.getUserId())
                 .remark(deviceFullDTO.getRemark()).selfConfirmId(deviceFullDTO.getSelfConfirmId()).osId(deviceFullDTO.getOsId())
                 .memoryId(deviceFullDTO.getMemoryId()).ssdId(deviceFullDTO.getSsdId()).hddId(deviceFullDTO.getHddId())
-                .creater(deviceFullDTO.getCreater()).updater(deviceFullDTO.getUpdater())
-                .build();
-
-        MonitorDTO monitorDTO = MonitorDTO.builder()
-                .monitorId(deviceFullDTO.getMonitorId())
-                .monitorName(deviceFullDTO.getMonitorName()).deviceId(deviceFullDTO.getDeviceId())
-                .creater(deviceFullDTO.getCreater()).updater(deviceFullDTO.getUpdater())
-                .build();
-
-
-        DeviceIpDTO deviceIpDTO = DeviceIpDTO.builder()
-                .ipId(deviceFullDTO.getIpId())
-                .ipAddress(deviceFullDTO.getIpAddress()).deviceId(deviceFullDTO.getDeviceId())
                 .creater(deviceFullDTO.getCreater()).updater(deviceFullDTO.getUpdater())
                 .build();
 
@@ -216,73 +230,92 @@ public class DeviceService {
 
 
         // monitor update
-        Monitor monitorReturn = convertMonitorToEntity(monitorDTO);
-        if(monitorRepository.existsByMonitorName(monitorDTO.getMonitorName())) {
+        List<Monitor> monitorReturns = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(deviceFullDTO.getMonitors())) {
+            for (MonitorDTO monitorDTO : deviceFullDTO.getMonitors()) {
 
-            Monitor monitorDB = monitorRepository.findByMonitorName(monitorDTO.getMonitorName());
+                monitorDTO.setDeviceId(deviceFullDTO.getDeviceId());
+                monitorDTO.setCreater(deviceFullDTO.getCreater());
+                monitorDTO.setUpdater(deviceFullDTO.getUpdater());
+
+                // exist
+                if(monitorRepository.existsByMonitorName(monitorDTO.getMonitorName())) {
+
+                    Monitor monitorDB = monitorRepository.findByMonitorName(monitorDTO.getMonitorName());
+
+                    // be used
+                    if (!monitorDB.getDeviceId().equals(deviceId)) {
+                        throw new IllegalStateException("Monitor " + monitorDTO.getMonitorName() + " is used by " + monitorDB.getDeviceId() + "!");
+                    }
+
+                    // モニタは変更されていません
+                    monitorDB.setMonitorName(monitorDTO.getMonitorName());
+                    monitorDB.setUpdater(monitorDTO.getUpdater());
+                    monitorDB.setUpdateTime(LocalDateTime.now());
+
+                    Monitor monitorReturn = monitorRepository.save(monitorDB);
+                    monitorReturns.add(monitorReturn);
+
+                } else { // not exist
+                    Monitor monitor = convertMonitorToEntity(monitorDTO);
+
+                    monitor.setCreateTime(LocalDateTime.now());
+                    monitor.setUpdateTime(LocalDateTime.now());
 
 
-            if(!monitorDB.getMonitorId().equals(monitorDTO.getMonitorId())) {
-//                System.out.println(monitorDB.getMonitorId() + "++++++++++" + monitorDTO.getMonitorId()); // 1  null
-                throw new IllegalStateException("This monitor is used by " + monitorDB.getDeviceId() + "!");
+                    Monitor monitorReturn = monitorRepository.save(monitor); // update
+                    monitorReturns.add(monitorReturn);
+                }
             }
-            // else updateがない
-
-        } else {
-            Monitor monitor = convertMonitorToEntity(monitorDTO);
-
-            // データベースクエリ、カバー範囲、データ整合性維持
-            Monitor monitorDB = monitorRepository.findByMonitorId(monitorDTO.getMonitorId());
-            monitor.setCreateTime(monitorDB.getCreateTime());
-            monitor.setCreater(monitorDB.getCreater());
-
-            monitor.setUpdateTime(LocalDateTime.now());
-            monitor.setMonitorId(monitorDTO.getMonitorId());
-
-            monitorReturn = monitorRepository.save(monitor); // update
         }
+
 
         // ip update
-        // ipチェック
-        String ipAddress = deviceIpDTO.getIpAddress();
-        ipAddress = ipAddress.trim();
+        List<DeviceIp> ipReturns = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(deviceFullDTO.getIpAddresses())) {
+            for (DeviceIpDTO deviceIpDTO : deviceFullDTO.getIpAddresses()) {
 
-        try {
-            InetAddress.getByName(ipAddress);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("IPアドレスの形式が無効です: " + ipAddress);
-        }
+                deviceIpDTO.setDeviceId(deviceFullDTO.getDeviceId());
+                deviceIpDTO.setCreater(deviceFullDTO.getCreater());
+                deviceIpDTO.setUpdater(deviceFullDTO.getUpdater());
 
-        // update
-        DeviceIp deviceIpReturn = convertDeviceIpToEntity(deviceIpDTO);
-        if(deviceIpRepository.existsByIpAddress(deviceIpDTO.getIpAddress())) {
+                // ipチェック
+                String ipAddress = deviceIpDTO.getIpAddress();
+                ipAddress = ipAddress.trim();
 
-            DeviceIp deviceIpDB = deviceIpRepository.findByIpAddress(deviceIpDTO.getIpAddress());
+                try {
+                    InetAddress.getByName(ipAddress);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("IPアドレスの形式が無効です: " + ipAddress);
+                }
 
-            if(!deviceIpDB.getIpId().equals(deviceIpDTO.getIpId())) {
-                throw new IllegalStateException("This ip is used by " + deviceIpDB.getDeviceId() + "!");
+                // update
+                if (deviceIpRepository.existsByIpAddress(deviceIpDTO.getIpAddress())) {
+                    DeviceIp deviceIpDB = deviceIpRepository.findByIpAddress(deviceIpDTO.getIpAddress());
+
+                    // be used
+                    if (!deviceIpDB.getDeviceId().equals(deviceId)) {
+                        throw new IllegalStateException("IP " + deviceIpDTO.getIpAddress() + " is used by " + deviceIpDB.getDeviceId() + "!");
+                    }
+
+                    // ipは変更されていません
+                    deviceIpDB.setIpAddress(deviceIpDTO.getIpAddress());
+                    deviceIpDB.setUpdater(deviceIpDTO.getUpdater());
+                    deviceIpDB.setUpdateTime(LocalDateTime.now());
+
+                    DeviceIp deviceIpReturn = deviceIpRepository.save(deviceIpDB);
+                    ipReturns.add(deviceIpReturn);
+
+                } else { // not exist
+                    DeviceIp deviceIp = convertDeviceIpToEntity(deviceIpDTO);
+                    deviceIp.setCreateTime(LocalDateTime.now());
+                    deviceIp.setUpdateTime(LocalDateTime.now());
+
+                    DeviceIp deviceIpReturn = deviceIpRepository.save(deviceIp);
+                    ipReturns.add(deviceIpReturn);
+                }
             }
-            // else updateがない
-
-        } else {
-
-
-            DeviceIp deviceIp = convertDeviceIpToEntity(deviceIpDTO);
-
-
-            // データベースクエリ、カバー範囲、データ整合性維持
-            DeviceIp deviceIpDB = deviceIpRepository.findByIpId(deviceIpDTO.getIpId());
-
-            deviceIp.setCreateTime(deviceIpDB.getCreateTime());
-            deviceIp.setCreater(deviceIpDB.getCreater());
-
-
-            deviceIp.setUpdateTime(LocalDateTime.now());
-            deviceIp.setIpId(deviceIpDTO.getIpId());
-
-            deviceIpReturn = deviceIpRepository.save(deviceIp); // update
         }
-
 
 
         DeviceFullDTO deviceFullDtoReturn = DeviceFullDTO.builder()
@@ -292,20 +325,30 @@ public class DeviceService {
                 .remark(deviceReturn.getRemark()).selfConfirmId(deviceReturn.getSelfConfirmId()).osId(deviceReturn.getOsId())
                 .memoryId(deviceReturn.getMemoryId()).ssdId(deviceReturn.getSsdId()).hddId(deviceReturn.getHddId())
                 .creater(deviceReturn.getCreater()).updater(deviceReturn.getUpdater())
-                .monitorName(monitorReturn.getMonitorName()).monitorId(monitorReturn.getMonitorId())
-                .ipAddress(deviceIpReturn.getIpAddress()).ipId(deviceIpReturn.getIpId())
+                .monitors(convertMonitorsToDTOList(monitorReturns))
+                .ipAddresses(convertDeviceIpsToDTOList(ipReturns))
                 .build();
 
         return deviceFullDtoReturn;
     }
 
 
+    // MonitorList 回転 MonitorDTOList
+    private List<MonitorDTO> convertMonitorsToDTOList(List<Monitor> monitors) {
+        if (CollectionUtils.isEmpty(monitors)) {
+            return new ArrayList<>();
+        }
+
+        return monitors.stream()
+                .map(this::convertMonitorToDTO)
+                .collect(Collectors.toList());
+    }
 
     // MonitorDTO 回転 Monitor
     private Monitor convertMonitorToEntity(MonitorDTO dto) {
         Monitor monitor = new Monitor();
 
-//        monitor.setMonitorId(dto.getMonitorId());
+        monitor.setMonitorId(dto.getMonitorId());
         monitor.setMonitorName(dto.getMonitorName());
         monitor.setDeviceId(dto.getDeviceId());
         monitor.setCreateTime(dto.getCreateTime());
@@ -329,12 +372,22 @@ public class DeviceService {
                 .build();
     }
 
+    // DeviceIpList 回転 DeviceIpDTOList
+    private List<DeviceIpDTO> convertDeviceIpsToDTOList(List<DeviceIp> deviceIps) {
+        if (CollectionUtils.isEmpty(deviceIps)) {
+            return new ArrayList<>();
+        }
+
+        return deviceIps.stream()
+                .map(this::convertDeviceIpToDTO)
+                .collect(Collectors.toList());
+    }
 
     // DeviceIpDTO 回転 DeviceIp
     private DeviceIp convertDeviceIpToEntity(DeviceIpDTO dto) {
         DeviceIp deviceIp = new DeviceIp();
 
-//        deviceIp.setIpId(dto.getIpId());
+        deviceIp.setIpId(dto.getIpId());
         deviceIp.setIpAddress(dto.getIpAddress());
         deviceIp.setDeviceId(dto.getDeviceId());
         deviceIp.setCreateTime(dto.getCreateTime());
@@ -358,7 +411,6 @@ public class DeviceService {
                 .updater(deviceIp.getUpdater())
                 .build();
     }
-
 
     // DeviceDTO 回転 Device
     private Device convertDeviceToEntity(DeviceDTO dto) {
