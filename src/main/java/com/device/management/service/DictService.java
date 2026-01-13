@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 public interface DictService {
     /** 辞書タイプのコードに基づいて辞書項目を検索する（sortで昇順に並べ替え）
-     * @return 辞書項目リスト
-     */
+    * @return 辞書項目リスト
+    */
     ApiResponse<List<DictTypeGroup>> getDictItems();
 }
