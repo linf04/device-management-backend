@@ -26,7 +26,7 @@ public class DeviceDTO {
     private String project; //所属プロジェクト
     private String devRoom; //所属開発室
     private String userId; //従業員番号
-    private UserDTO userInfo;   //ユーザ情報
+    private UserDto userInfo;   //ユーザ情報
     private String remark; //備考
 
     private Integer selfConfirmId; //本人確認ID

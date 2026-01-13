@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 认证异常
+ * 認証例外
  */
 @Data
 @NoArgsConstructor

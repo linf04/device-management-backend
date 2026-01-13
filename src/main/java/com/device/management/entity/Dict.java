@@ -1,16 +1,17 @@
 package com.device.management.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
 @Entity
 @Table(name = "dict")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Dict {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "dict_id", columnDefinition = "bigint")
@@ -46,40 +47,8 @@ public class Dict {
     @Column(name = "updater", length = 100)
     private String updater; // 更新者
 
-    // ========== 列挙型定義 ==========
 
-    /**
-     * ディクショナリ種別列挙型
-     */
-    @Getter
-    public enum DictType {
-        CONFIRM_STATUS("CONFIRM_STATUS", "本人确认"),
-        OS_TYPE("OS_TYPE", "操作系统"),
-        MEMORY_SIZE("MEMORY_SIZE", "内存"),
-        SSD_SIZE("SSD_SIZE", "固态硬盘"),
-        HDD_SIZE("HDD_SIZE", "机械硬盘");
-
-        private final String code;
-        private final String name;
-
-        DictType(String code, String name) {
-            this.code = code;
-            this.name = name;
-        }
-    }
-
-    // ========== 業務メソッド ==========
-
-    /**
-     * 指定した種別のディクショナリ項目か判定する
-     */
-    public boolean isType(DictType dictType) {
-        return this.dictTypeCode.equals(dictType.getCode());
-    }
-
-    /**
-     * フル表示名を取得する（種別＋項目名）
-     */
+    //フル表示名を取得する（種別＋項目名）
     public String getFullDisplayName() {
         return dictTypeName + " - " + dictItemName;
     }

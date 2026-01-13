@@ -1,10 +1,7 @@
 package com.device.management.entity;
 
-
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.ToString;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -15,17 +12,20 @@ import java.util.List;
 /**
  * ユーザエンティティ（usersテーブル）
  */
-@Data
+
 @Entity
 @Table(name = "users")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
-
     @Id
-    @Column(name = "user_id", length = 50)
-    private String userId; // ユーザID（プライマリキー）
+    @Column(name = "user_id")
+    private String userId; // 従業員番号
 
-    @Column(name = "dept_id", length = 50, nullable = false)
-    private String deptId; // 部署番号
+    @Column(name = "dept_id")
+    private String deptId; // 部門
 
     @Column(name = "name", length = 100, nullable = false)
     private String name; // 氏名
@@ -39,7 +39,7 @@ public class User {
 
     @CreationTimestamp
     @Column(name = "create_time")
-    private LocalDateTime createTime; // 作成日時
+    private LocalDateTime createTime; // 作成時間
 
     @Column(name = "creater", length = 100)
     private String creater; // 作成者
@@ -70,21 +70,5 @@ public class User {
     @EqualsAndHashCode.Exclude
     private List<SamplingCheck> samplingChecks = new ArrayList<>();
 
-    // ============= コンストラクタ =============
-
-    public User() {
-        this.createTime = LocalDateTime.now();
-        this.updateTime = LocalDateTime.now();
-    }
-
-    public User(String userId, String name, String deptId, Long userTypeId, String password) {
-        this.userId = userId;
-        this.name = name;
-        this.deptId = deptId;
-        this.userTypeId = userTypeId;
-        this.password = password;
-        this.createTime = LocalDateTime.now();
-        this.updateTime = LocalDateTime.now();
-    }
 
 }

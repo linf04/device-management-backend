@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Data
@@ -32,12 +33,14 @@ public class DeviceFullDTO {
     private String updater; //更新者 update
 
     // monitor
-    private String monitorName; // 'モニター名
-    private Integer monitorId; // モニター番号 update
+    private List<MonitorDTO> monitors; // モニターリスト
+//    private String monitorName; // 'モニター名
+//    private Integer monitorId; // モニター番号 update
 
     //ip
-    private String ipAddress; //IPアドレス
-    private Integer ipId; //IP番号 update
+    private List<DeviceIpDTO> ipAddresses; // IPアドレスリスト
+//    private String ipAddress; //IPアドレス
+//    private Integer ipId; //IP番号 update
 
     // user
     private String name;
