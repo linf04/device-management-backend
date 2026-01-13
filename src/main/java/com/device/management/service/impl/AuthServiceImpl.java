@@ -29,16 +29,16 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private UserRepository userRepository;
-
+    
     @Autowired
     private DictRepository dictRepository;
-
+    
     @Autowired
     private PasswordEncoder passwordEncoder;
-
+    
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
-
+    
     @Autowired
     private HttpServletRequest httpServletRequest;
     /**
