@@ -709,6 +709,48 @@ public class DeviceService {
     @PersistenceContext
     private EntityManager entityManager;
 
+        // 全ての重複しない開発室名を取得
+    public List<String> getAllDevRooms() {
+        String jpql = "SELECT DISTINCT d.devRoom FROM Device d WHERE d.devRoom IS NOT NULL AND TRIM(d.devRoom) != '' ORDER BY d.devRoom";
+
+        try {
+            List<String> devRooms = entityManager.createQuery(jpql, String.class)
+                    .getResultList();
+
+            // 空値をフィルタリングし、前後の空白を除去
+            return devRooms.stream()
+                    .filter(StringUtils::hasText)
+                    .map(String::trim)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("获取开发室列表时出错", e);
+            return Collections.emptyList();
+        }
+    }
+
+    // 全ての重複しないプロジェクト名を取得
+    public List<String> getAllProjects() {
+        String jpql = "SELECT DISTINCT d.project FROM Device d WHERE d.project IS NOT NULL AND TRIM(d.project) != '' ORDER BY d.project";
+
+        try {
+            List<String> projects = entityManager.createQuery(jpql, String.class)
+                    .getResultList();
+
+            // 空値をフィルタリングし、前後の空白を除去
+            return projects.stream()
+                    .filter(StringUtils::hasText)
+                    .map(String::trim)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("获取项目列表时出错", e);
+            return Collections.emptyList();
+        }
+    }
+
     // デバイス一覧（ページングとフィルタリング）
     public Page<DeviceDTO> list(String deviceName, String userId, String userName, String project, String devRoom, int page, int size) {
         // ページ数の調整：ページ番号1から始まる
