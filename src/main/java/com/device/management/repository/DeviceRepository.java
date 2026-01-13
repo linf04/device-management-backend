@@ -20,6 +20,87 @@ public interface DeviceRepository extends JpaRepository<Device, String> {
 
     List<Device> findByDeviceId(String deviceId);
 
+    // 全ての重複しない開発室名を取得
+    @Query("SELECT DISTINCT d.devRoom FROM Device d WHERE d.devRoom IS NOT NULL AND TRIM(d.devRoom) != '' ORDER BY d.devRoom")
+    List<String> findDistinctDevRooms();
+
+    // 全ての重複しないプロジェクト名を取得
+    @Query("SELECT DISTINCT d.project FROM Device d WHERE d.project IS NOT NULL AND TRIM(d.project) != '' ORDER BY d.project")
+    List<String> findDistinctProjects();
+
+    // 条件によるユーザーIDリストの検索
+    @Query("SELECT DISTINCT d.userId FROM Device d WHERE d.userId IS NOT NULL " +
+            "AND (:deviceName IS NULL OR d.computerName LIKE %:deviceName%) " +
+            "AND (:userId IS NULL OR d.userId = :userId)")
+    List<String> findUserIdsByCondition(
+            @Param("deviceName") String deviceName,
+            @Param("userId") String userId
+    );
+
+    // ユーザーIDリストによるデバイス検索（関連付き）
+    @Query("SELECT d FROM Device d " +
+            "LEFT JOIN FETCH d.osDict " +
+            "LEFT JOIN FETCH d.memoryDict " +
+            "LEFT JOIN FETCH d.ssdDict " +
+            "LEFT JOIN FETCH d.hddDict " +
+            "LEFT JOIN FETCH d.selfConfirmDict " +
+            "WHERE d.userId IN :userIds")
+    List<Device> findByUserIdsWithDicts(@Param("userIds") List<String> userIds);
+
+    // デバイスIDによるデバイス検索（関連付き）
+    @Query("SELECT d FROM Device d " +
+            "LEFT JOIN FETCH d.osDict " +
+            "LEFT JOIN FETCH d.memoryDict " +
+            "LEFT JOIN FETCH d.ssdDict " +
+            "LEFT JOIN FETCH d.hddDict " +
+            "LEFT JOIN FETCH d.selfConfirmDict " +
+            "WHERE TRIM(d.deviceId) = :deviceId")
+    Device findByDeviceIdWithDicts(@Param("deviceId") String deviceId);
+
+    // 条件によるデバイスのページング検索
+    @Query("SELECT d FROM Device d " +
+            "LEFT JOIN FETCH d.user u " +
+            "LEFT JOIN FETCH d.osDict " +
+            "LEFT JOIN FETCH d.memoryDict " +
+            "LEFT JOIN FETCH d.ssdDict " +
+            "LEFT JOIN FETCH d.hddDict " +
+            "LEFT JOIN FETCH d.selfConfirmDict " +
+            "WHERE (:deviceName IS NULL OR d.computerName LIKE %:deviceName%) " +
+            "AND (:userId IS NULL OR d.userId = :userId) " +
+            "AND (:userName IS NULL OR u.userName LIKE %:userName%) " +
+            "AND (:project IS NULL OR d.project LIKE %:project%) " +
+            "AND (:devRoom IS NULL OR d.devRoom LIKE %:devRoom%)")
+    List<Device> findByConditions(
+            @Param("deviceName") String deviceName,
+            @Param("userId") String userId,
+            @Param("userName") String userName,
+            @Param("project") String project,
+            @Param("devRoom") String devRoom
+    );
+
+    // 総レコード数の取得（条件付き）
+    @Query("SELECT COUNT(d) FROM Device d " +
+            "LEFT JOIN d.user u " +
+            "WHERE (:deviceName IS NULL OR d.computerName LIKE %:deviceName%) " +
+            "AND (:userId IS NULL OR d.userId = :userId) " +
+            "AND (:userName IS NULL OR u.userName LIKE %:userName%) " +
+            "AND (:project IS NULL OR d.project LIKE %:project%) " +
+            "AND (:devRoom IS NULL OR d.devRoom LIKE %:devRoom%)")
+    Long countByConditions(
+            @Param("deviceName") String deviceName,
+            @Param("userId") String userId,
+            @Param("userName") String userName,
+            @Param("project") String project,
+            @Param("devRoom") String devRoom
+    );
+
+    // デバイスIDリストによるデバイスIPマッピングの取得
+    @Query("SELECT TRIM(d.device.deviceId) as deviceId, d FROM DeviceIp d WHERE d.device.deviceId IN :deviceIds")
+    List<Object[]> findDeviceIpsByDeviceIds(@Param("deviceIds") List<String> deviceIds);
+
+    // デバイスIDリストによるモニターマッピングの取得
+    @Query("SELECT TRIM(m.device.deviceId) as deviceId, m FROM Monitor m WHERE m.device.deviceId IN :deviceIds")
+    List<Object[]> findMonitorsByDeviceIds(@Param("deviceIds") List<String> deviceIds);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional

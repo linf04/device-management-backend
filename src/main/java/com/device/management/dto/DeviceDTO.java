@@ -62,11 +62,4 @@ public class DeviceDTO {
     @Builder.Default
     private List<DeviceIpDTO> deviceIps = new ArrayList<>();//IPアドレスリスト
 
-    //集計情報
-    private String hardwareSummary;//ハードウェア構成サマリー, example = "OS: Windows 11 Pro | メモリ: 16GB | SSD: 512GB | HDD: 1TB"
-    private String ipAddresses;//IPアドレス一覧, example = "192.168.1.100, 192.168.1.101"
-    private Integer monitorCount;//モニター数, example = "2"
-    private Integer ipCount;//IPアドレス数, example = "1"
-    private String status;//デバイス状態, example = "ACTIVE"
-
 }

@@ -1,6 +1,6 @@
 package com.device.management.service;
 
-
+import com.device.management.entity.*;
 import com.device.management.dto.*;
 import com.device.management.entity.Device;
 import com.device.management.entity.DeviceIp;
@@ -701,117 +701,32 @@ public class DeviceService {
             }
         }
     }
-
-
-    @PersistenceContext
-    private EntityManager entityManager;
-
-        // 全ての重複しない開発室名を取得
-    public List<String> getAllDevRooms() {
-        String jpql = "SELECT DISTINCT d.devRoom FROM Device d WHERE d.devRoom IS NOT NULL AND TRIM(d.devRoom) != '' ORDER BY d.devRoom";
-
-        try {
-            List<String> devRooms = entityManager.createQuery(jpql, String.class)
-                    .getResultList();
-
-            // 空値をフィルタリングし、前後の空白を除去
-            return devRooms.stream()
-                    .filter(StringUtils::hasText)
-                    .map(String::trim)
-                    .distinct()
-                    .sorted()
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            log.error("获取开发室列表时出错", e);
-            return Collections.emptyList();
-        }
-    }
-
-    // 全ての重複しないプロジェクト名を取得
-    public List<String> getAllProjects() {
-        String jpql = "SELECT DISTINCT d.project FROM Device d WHERE d.project IS NOT NULL AND TRIM(d.project) != '' ORDER BY d.project";
-
-        try {
-            List<String> projects = entityManager.createQuery(jpql, String.class)
-                    .getResultList();
-
-            // 空値をフィルタリングし、前後の空白を除去
-            return projects.stream()
-                    .filter(StringUtils::hasText)
-                    .map(String::trim)
-                    .distinct()
-                    .sorted()
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            log.error("获取项目列表时出错", e);
-            return Collections.emptyList();
-        }
-    }
-
-    // デバイス一覧（ページングとフィルタリング）
+    
+    /**
+     * デバイス一覧取得（ページングとフィルタリング対応）
+     */
     public Page<DeviceDTO> list(String deviceName, String userId, String userName, String project, String devRoom, int page, int size) {
-        // ページ数の調整：ページ番号1から始まる
+        // ページ番号調整：1始まりから0始まりに変換
         page = page > 0 ? page - 1 : 0;
         Pageable pageable = PageRequest.of(page, size, Sort.by("deviceId").ascending());
 
-        // デバイスを直接クエリ（ユーザーテーブルをLEFT JOIN）
-        StringBuilder jpql = new StringBuilder(
-                "SELECT d FROM Device d " +
-                        "LEFT JOIN FETCH d.user u " +
-                        "LEFT JOIN FETCH d.osDict " +
-                        "LEFT JOIN FETCH d.memoryDict " +
-                        "LEFT JOIN FETCH d.ssdDict " +
-                        "LEFT JOIN FETCH d.hddDict " +
-                        "LEFT JOIN FETCH d.selfConfirmDict " +
-                        "WHERE 1=1 "
-        );
-
-        if (StringUtils.hasText(deviceName)) {
-            jpql.append("AND d.computerName LIKE :deviceName ");
-        }
-        if (StringUtils.hasText(userId)) {
-            jpql.append("AND d.userId = :userId ");
-        }
-        if (StringUtils.hasText(userName)) {
-            jpql.append("AND u.userName LIKE :userName ");
-        }
-        if (StringUtils.hasText(project)) {
-            jpql.append("AND d.project LIKE :project ");
-        }
-        if (StringUtils.hasText(devRoom)) {
-            jpql.append("AND d.devRoom LIKE :devRoom ");
-        }
-
-        TypedQuery<Device> query = entityManager.createQuery(jpql.toString(), Device.class);
-
-        if (StringUtils.hasText(deviceName)) {
-            query.setParameter("deviceName", "%" + deviceName + "%");
-        }
-        if (StringUtils.hasText(userId)) {
-            query.setParameter("userId", userId);
-        }
-        if (StringUtils.hasText(userName)) {
-            query.setParameter("userName", "%" + userName + "%");
-        }
-        if (StringUtils.hasText(project)) {
-            query.setParameter("project", "%" + project + "%");
-        }
-        if (StringUtils.hasText(devRoom)) {
-            query.setParameter("devRoom", "%" + devRoom + "%");
-        }
-
-        // ページング処理
-        int totalRows = getTotalCount(deviceName, userId, userName, project, devRoom);
-        query.setFirstResult((int) pageable.getOffset());
-        query.setMaxResults(pageable.getPageSize());
-
-        List<Device> devices = query.getResultList();
+        // 条件に合致するデバイス一覧を取得
+        List<Device> devices = deviceRepository.findByConditions(deviceName, userId, userName, project, devRoom);
+        
+        // 総レコード数を取得
+        Long totalCount = deviceRepository.countByConditions(deviceName, userId, userName, project, devRoom);
+        
         if (devices.isEmpty()) {
             return Page.empty(pageable);
         }
 
-        // 関連データをバッチでロード
-        List<String> deviceIds = devices.stream()
+        // ページング処理
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), devices.size());
+        List<Device> pagedDevices = devices.subList(start, end);
+
+        // 関連データを一括ロード
+        List<String> deviceIds = pagedDevices.stream()
                 .map(d -> d.getDeviceId().trim())
                 .collect(Collectors.toList());
 
@@ -819,129 +734,50 @@ public class DeviceService {
         Map<String, List<Monitor>> monitorMap = getDeviceMonitorMap(deviceIds);
 
         // DTOに変換
-        List<DeviceDTO> dtoList = devices.stream()
+        List<DeviceDTO> dtoList = pagedDevices.stream()
                 .map(device -> toDTOWithRelations(device, ipMap, monitorMap))
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(dtoList, pageable, totalRows);
+        return new PageImpl<>(dtoList, pageable, totalCount);
     }
 
-    // 総レコード数を取得
-    private int getTotalCount(String deviceName, String userId, String userName, String project, String devRoom) {
-        StringBuilder jpql = new StringBuilder(
-                "SELECT COUNT(d) FROM Device d " +
-                        "LEFT JOIN d.user u " +
-                        "WHERE 1=1 "
-        );
-
-        if (StringUtils.hasText(deviceName)) {
-            jpql.append("AND d.computerName LIKE :deviceName ");
-        }
-        if (StringUtils.hasText(userId)) {
-            jpql.append("AND d.userId = :userId ");
-        }
-        if (StringUtils.hasText(userName)) {
-            jpql.append("AND u.userName LIKE :userName ");
-        }
-        if (StringUtils.hasText(project)) {
-            jpql.append("AND d.project LIKE :project ");
-        }
-        if (StringUtils.hasText(devRoom)) {
-            jpql.append("AND d.devRoom LIKE :devRoom ");
-        }
-
-        TypedQuery<Long> query = entityManager.createQuery(jpql.toString(), Long.class);
-
-        if (StringUtils.hasText(deviceName)) {
-            query.setParameter("deviceName", "%" + deviceName + "%");
-        }
-        if (StringUtils.hasText(userId)) {
-            query.setParameter("userId", userId);
-        }
-        if (StringUtils.hasText(userName)) {
-            query.setParameter("userName", "%" + userName + "%");
-        }
-        if (StringUtils.hasText(project)) {
-            query.setParameter("project", "%" + project + "%");
-        }
-        if (StringUtils.hasText(devRoom)) {
-            query.setParameter("devRoom", "%" + devRoom + "%");
-        }
-
-        return query.getSingleResult().intValue();
-    }
-
-    // UserServiceで呼び出し用：デバイス名またはユーザーIDでフィルタリングしてユニークなユーザーIDリストを取得
-    public List<String> findUserIdsByCondition(String deviceName, String userId) {
-        StringBuilder jpql = new StringBuilder("SELECT DISTINCT d.userId FROM Device d WHERE d.userId IS NOT NULL ");
-        if (StringUtils.hasText(deviceName)) {
-            jpql.append("AND d.computerName LIKE :deviceName ");
-        }
-        if (StringUtils.hasText(userId)) {
-            jpql.append("AND d.userId = :userId ");
-        }
-
-        TypedQuery<String> query = entityManager.createQuery(jpql.toString(), String.class);
-        if (StringUtils.hasText(deviceName)) {
-            query.setParameter("deviceName", "%" + deviceName + "%");
-        }
-        if (StringUtils.hasText(userId)) {
-            query.setParameter("userId", userId);
-        }
-        return query.getResultList();
-    }
-
-    // デバイス詳細クエリ、CHAR型のTRIM処理
+    /**
+     * デバイス詳細情報取得
+     */
     public DeviceDTO detail(String deviceId) {
         if (!StringUtils.hasText(deviceId)) return null;
 
-        String jpql = "SELECT d FROM Device d " +
-                "LEFT JOIN FETCH d.user u " +
-                "LEFT JOIN FETCH d.osDict " +
-                "LEFT JOIN FETCH d.memoryDict " +
-                "LEFT JOIN FETCH d.ssdDict " +
-                "LEFT JOIN FETCH d.hddDict " +
-                "LEFT JOIN FETCH d.selfConfirmDict " +
-                "LEFT JOIN FETCH u.userTypeDict " +
-                "WHERE TRIM(d.deviceId) = :deviceId";
-
         try {
-            Device device = entityManager.createQuery(jpql, Device.class)
-                    .setParameter("deviceId", deviceId.trim())
-                    .getSingleResult();
+            Device device = deviceRepository.findByDeviceIdWithDicts(deviceId.trim());
+            if (device == null) {
+                log.error("デバイス詳細が見つかりません: {}", deviceId);
+                return null;
+            }
 
             List<String> ids = Collections.singletonList(device.getDeviceId().trim());
             return toDTOWithRelations(device, getDeviceIpMap(ids), getDeviceMonitorMap(ids));
         } catch (Exception e) {
-            log.error("デバイス詳細が見つかりません: {}", deviceId);
+            log.error("デバイス詳細クエリ中にエラーが発生しました: {}", deviceId, e);
             return null;
         }
     }
 
-    // 単一ユーザーの全デバイスを取得
+    /**
+     * 単一ユーザーの全デバイスを取得
+     */
     public List<DeviceDTO> getDevicesByUserId(String userId) {
         if (!StringUtils.hasText(userId)) return new ArrayList<>();
         Map<String, List<DeviceDTO>> resultMap = getDeviceMapByUserIds(Collections.singletonList(userId.trim()));
         return resultMap.getOrDefault(userId.trim(), new ArrayList<>());
     }
 
-    // バッチでユーザーデバイスマッピングを取得
+    /**
+     * バッチ処理：ユーザーIDリストに対応するデバイスマッピングを取得
+     */
     public Map<String, List<DeviceDTO>> getDeviceMapByUserIds(List<String> userIds) {
         if (userIds == null || userIds.isEmpty()) return Collections.emptyMap();
 
-        String jpql = "SELECT d FROM Device d " +
-                "LEFT JOIN FETCH d.user u " +
-                "LEFT JOIN FETCH d.osDict " +
-                "LEFT JOIN FETCH d.memoryDict " +
-                "LEFT JOIN FETCH d.ssdDict " +
-                "LEFT JOIN FETCH d.hddDict " +
-                "LEFT JOIN FETCH d.selfConfirmDict " +
-                "WHERE d.userId IN :userIds";
-
-        List<Device> allDevices = entityManager.createQuery(jpql, Device.class)
-                .setParameter("userIds", userIds)
-                .getResultList();
-
+        List<Device> allDevices = deviceRepository.findByUserIdsWithDicts(userIds);
         if (allDevices.isEmpty()) return Collections.emptyMap();
 
         List<String> deviceIds = allDevices.stream()
@@ -956,7 +792,56 @@ public class DeviceService {
                 .collect(Collectors.groupingBy(DeviceDTO::getUserId));
     }
 
-    // フィールド欠落防止
+    /**
+     * 全ての開発室名を取得（重複排除）
+     */
+    public List<String> getAllDevRooms() {
+        try {
+            List<String> devRooms = deviceRepository.findDistinctDevRooms();
+            
+            // 空値をフィルタリングし、前後の空白をトリム
+            return devRooms.stream()
+                    .filter(StringUtils::hasText)
+                    .map(String::trim)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("開発室一覧取得中にエラーが発生しました", e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * 全てのプロジェクト名を取得（重複排除）
+     */
+    public List<String> getAllProjects() {
+        try {
+            List<String> projects = deviceRepository.findDistinctProjects();
+            
+            // 空値をフィルタリングし、前後の空白をトリム
+            return projects.stream()
+                    .filter(StringUtils::hasText)
+                    .map(String::trim)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("プロジェクト一覧取得中にエラーが発生しました", e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * UserService呼び出し用：デバイス名またはユーザーIDでフィルタリングしてユニークなユーザーIDリストを取得
+     */
+    public List<String> findUserIdsByCondition(String deviceName, String userId) {
+        return deviceRepository.findUserIdsByCondition(deviceName, userId);
+    }
+
+    /**
+     * デバイスエンティティを関連データを含むDTOに変換（フィールド欠落防止）
+     */
     private DeviceDTO toDTOWithRelations(Device device, Map<String, List<DeviceIp>> ipMap, Map<String, List<Monitor>> monitorMap) {
         DeviceDTO dto = toBasicDTO(device);
         String key = device.getDeviceId().trim();
@@ -975,9 +860,6 @@ public class DeviceService {
             return ipDto;
         }).collect(Collectors.toList()));
 
-        // 集約IP文字列を設定
-        dto.setIpAddresses(ips.stream().map(DeviceIp::getIpAddress).collect(Collectors.joining(", ")));
-
         // モニターリストを設定
         List<Monitor> monitors = monitorMap.getOrDefault(key, new ArrayList<>());
         dto.setMonitors(monitors.stream().map(m -> {
@@ -992,13 +874,12 @@ public class DeviceService {
             return mDto;
         }).collect(Collectors.toList()));
 
-        // 集計情報を設定
-        dto.setIpCount(ips.size());
-        dto.setMonitorCount(monitors.size());
-
         return dto;
     }
 
+    /**
+     * デバイスエンティティを基本情報のみのDTOに変換
+     */
     private DeviceDTO toBasicDTO(Device device) {
         DeviceDTO dto = DeviceDTO.builder()
                 .deviceId(device.getDeviceId().trim())
@@ -1006,7 +887,7 @@ public class DeviceService {
                 .userInfo(device.getUser() != null ? UserDTO.builder()
                         .userId(device.getUser().getUserId())
                         .deptId(device.getUser().getDeptId())
-                        .name(device.getUser().getName())
+                        .userName(device.getUser().getUserName())
                         .userType(DictMapper.toDTO(device.getUser().getUserTypeDict()))
                         .createTime(device.getUser().getCreateTime())
                         .creater(device.getUser().getCreater())
@@ -1034,40 +915,18 @@ public class DeviceService {
                 .updater(device.getUpdater())
                 .build();
 
-        // ハードウェア構成サマリーを生成
-        StringBuilder summary = new StringBuilder();
-        if (dto.getOsDict() != null && dto.getOsDict().getDictItemName() != null) {
-            summary.append("操作系统: ").append(dto.getOsDict().getDictItemName()).append(" | ");
-        }
-        if (dto.getMemoryDict() != null && dto.getMemoryDict().getDictItemName() != null) {
-            summary.append("内存: ").append(dto.getMemoryDict().getDictItemName()).append(" | ");
-        }
-        if (dto.getSsdDict() != null && dto.getSsdDict().getDictItemName() != null) {
-            summary.append("固态硬盘: ").append(dto.getSsdDict().getDictItemName()).append(" | ");
-        }
-        if (dto.getHddDict() != null && dto.getHddDict().getDictItemName() != null) {
-            summary.append("机械硬盘: ").append(dto.getHddDict().getDictItemName());
-        }
-
-        // 末尾の" | "を削除
-        if (summary.length() > 0 && summary.toString().endsWith(" | ")) {
-            summary.setLength(summary.length() - 3);
-        }
-        dto.setHardwareSummary(summary.toString());
-
         return dto;
     }
 
-    // プライベートヘルパークエリ、関連データを処理
+    /**
+     * ヘルパーメソッド：デバイスIDリストに対応するIP情報を取得
+     */
     private Map<String, List<DeviceIp>> getDeviceIpMap(List<String> deviceIds) {
         if (deviceIds.isEmpty()) return Collections.emptyMap();
-        // SQLレイヤーでTRIM処理
-        String jpql = "SELECT TRIM(ip.device.deviceId), ip FROM DeviceIp ip WHERE ip.device.deviceId IN :deviceIds";
-        List<Object[]> results = entityManager.createQuery(jpql, Object[].class)
-                .setParameter("deviceIds", deviceIds)
-                .getResultList();
-
+        
+        List<Object[]> results = deviceRepository.findDeviceIpsByDeviceIds(deviceIds);
         Map<String, List<DeviceIp>> map = new HashMap<>();
+        
         for (Object[] row : results) {
             String id = ((String) row[0]).trim();
             map.computeIfAbsent(id, k -> new ArrayList<>()).add((DeviceIp) row[1]);
@@ -1075,14 +934,15 @@ public class DeviceService {
         return map;
     }
 
+    /**
+     * ヘルパーメソッド：デバイスIDリストに対応するモニター情報を取得
+     */
     private Map<String, List<Monitor>> getDeviceMonitorMap(List<String> deviceIds) {
         if (deviceIds.isEmpty()) return Collections.emptyMap();
-        String jpql = "SELECT TRIM(m.device.deviceId), m FROM Monitor m WHERE m.device.deviceId IN :deviceIds";
-        List<Object[]> results = entityManager.createQuery(jpql, Object[].class)
-                .setParameter("deviceIds", deviceIds)
-                .getResultList();
-
+        
+        List<Object[]> results = deviceRepository.findMonitorsByDeviceIds(deviceIds);
         Map<String, List<Monitor>> map = new HashMap<>();
+        
         for (Object[] row : results) {
             String id = ((String) row[0]).trim();
             map.computeIfAbsent(id, k -> new ArrayList<>()).add((Monitor) row[1]);
