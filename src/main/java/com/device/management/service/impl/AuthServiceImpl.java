@@ -48,19 +48,27 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public ApiResponse<LoginDto> login(LoginRequest loginRequest) {
-        // 1. ユーザーIDでユーザーを検索
+        // 1. 非空チェック（復号後の検証）
+        if (!StringUtils.hasText(loginRequest.getUserId())) {
+            return ApiResponse.error(400, "ユーザーIDは必須です");
+        }
+        if (!StringUtils.hasText(loginRequest.getPassword())) {
+            return ApiResponse.error(400, "パスワードは必須です");
+        }
+
+        // 2. ユーザーIDでユーザーを検索
         User user = userRepository.findByUserId(loginRequest.getUserId())
                 .orElseThrow(() -> new UnauthorizedException("ユーザーが存在しません"));
 
-        // 2. パスワードを検証（失敗時は直接パスワードエラー列挙型を返す）
+        // 3. パスワードを検証（失敗時は直接パスワードエラー列挙型を返す）
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new UnauthorizedException(401, "パスワードが正しくありません");
         }
 
-        // 3. JWT Tokenを生成
+        // 4. JWT Tokenを生成
         String token = jwtTokenProvider.generateToken(user.getUserId(), user.getUserTypeId());
 
-        // 4. UserInfoを構築する際にユーザータイプを検索（存在しない場合はシステムエラーをスロー）
+        // 5. UserInfoを構築する際にユーザータイプを検索（存在しない場合はシステムエラーをスロー）
         Dict userType = dictRepository.findByDictIdAndDictTypeCode(
                 user.getUserTypeId(),
                 "USER_TYPE"
@@ -73,10 +81,10 @@ public class AuthServiceImpl implements AuthService {
         userDTO.setName(user.getName());
         userDTO.setUserTypeName(userType.getDictItemName());
 
-        // 5. LoginDTOを組み立て
+        // 6. LoginDTOを組み立て
         LoginDto loginDTO = new LoginDto(token, userDTO);
 
-        // 6. ログイン成功結果を返す
+        // 7. ログイン成功結果を返す
         return ApiResponse.success( "ログイン成功", loginDTO);
     }
 
@@ -175,7 +183,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public ApiResponse<Void> changePassword(ChangePasswordRequest req) {
-        // 1.JWT を解析し、検証する
+        // 1. 基本的な非空チェック（userIdのみ、パスワードは復号後に検証）
+        if (!StringUtils.hasText(req.getUserId())) {
+            return ApiResponse.error(400, "ユーザーIDは必須です");
+        }
+
+        // 2. JWT を解析し、検証する
         String token = extractTokenFromRequest();
         if (!jwtTokenProvider.validateToken(token)) {
             return ApiResponse.error(401, "トークンが無効です");
@@ -183,13 +196,23 @@ public class AuthServiceImpl implements AuthService {
         String tokenUserId = jwtTokenProvider.getUserIdFromToken(token);
         Long tokenUserType = jwtTokenProvider.getUserTypeIdFromToken(token);
 
-        // 2. 一般ユーザーは自身のパスワードのみ変更可能 管理者は全ユーザーのパスワードを変更可能
+        // 3. 一般ユーザーは自身のパスワードのみ変更可能 管理者は全ユーザーのパスワードを変更可能
         boolean isAdmin = Objects.equals(tokenUserType, DictEnum.USER_TYPE_ADMIN.getDictId());
         if (!isAdmin && !tokenUserId.equals(req.getUserId())) {
             return ApiResponse.error(403, "他人のパスワードを変更する権限がありません");
         }
 
-        // 3. 旧パスワードを検証（管理者はスキップ）
+        // 4. 復号後のパスワード非空チェック
+        if (!StringUtils.hasText(req.getNewPassword())) {
+            return ApiResponse.error(400, "新しいパスワードは必須です");
+        }
+
+        // 5. currentPasswordの非空チェック（一般ユーザーの場合は必須、管理者の場合は不要）
+        if (!isAdmin && !StringUtils.hasText(req.getCurrentPassword())) {
+            return ApiResponse.error(400, "現在のパスワードは必須です");
+        }
+
+        // 6. 旧パスワードを検証（管理者はスキップ）
         User user = userRepository.findByUserId(req.getUserId())
                 .orElseThrow(() -> new UnauthorizedException("ユーザーが存在しません"));
 
@@ -197,12 +220,18 @@ public class AuthServiceImpl implements AuthService {
             return ApiResponse.error(40001, "現在のパスワードが正しくありません");
         }
 
-        // 4. 新しいパスワードは古いパスワードと同一にできません
+        // 7. 新しいパスワードは古いパスワードと同一にできません
         if (passwordEncoder.matches(req.getNewPassword(), user.getPassword())) {
             return ApiResponse.error(40003, "新しいパスワードは古いパスワードと同じにすることはできません");
         }
+
+        // 8. 新しいパスワードの形式を検証（8文字以上で英字・数字・特殊文字を含む）
+        String newPasswordPattern = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?])[A-Za-z\\d@$!%*?]{8,}$";
+        if (!req.getNewPassword().matches(newPasswordPattern)) {
+            return ApiResponse.error(40002, "新パスワードは8文字以上で英字・数字・特殊文字を含む必要があります");
+        }
         
-        // 6. パスワードを更新する
+        // 9. パスワードを更新する
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));
         userRepository.save(user);
 

@@ -1,6 +1,5 @@
 package com.device.management.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
@@ -8,7 +7,6 @@ import lombok.Data;
  */
 @Data
 public class ChangePasswordRequest {
-    @NotBlank
     private String userId;
 
     private String currentPassword;

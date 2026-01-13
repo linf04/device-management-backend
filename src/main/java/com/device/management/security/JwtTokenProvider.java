@@ -144,12 +144,7 @@ public class JwtTokenProvider {
      * Tokenの全てのクレームを取得
      */
     public Claims getAllClaimsFromToken(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-        return Jwts.parser()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        return parseToken(token);
     }
 
     /**
@@ -157,7 +152,7 @@ public class JwtTokenProvider {
      */
     public boolean isTokenExpired(String token) {
         try {
-            Claims claims = getAllClaimsFromToken(token);
+            Claims claims = parseToken(token);
             return claims.getExpiration().before(new Date());
         } catch (Exception e) {
             return true;

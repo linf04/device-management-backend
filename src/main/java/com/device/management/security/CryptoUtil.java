@@ -15,12 +15,15 @@ import java.util.Base64;
 public class CryptoUtil {
     private static final String KEY = "1234567890abcdef";
     private static final String ALG  = "AES/ECB/PKCS5Padding";
-    private static final String CHARSET = "UTF-8";
 
     /** 共通復号ツール */
     public static void decryptPasswordFields(Object dto) {
         try {
             if (dto instanceof LoginRequest req) {
+                // passwordがnullの場合はエラー
+                if (req.getPassword() == null) {
+                    throw new UnauthorizedException("パスワードは必須です");
+                }
                 req.setPassword(CryptoUtil.decrypt(req.getPassword())); // ログインパスワードを復号
                 // フロントエンドから送信されるのは暗号化されたパスワードで、バックエンドで復号する必要があります
             }
@@ -28,6 +31,10 @@ public class CryptoUtil {
                 // currentPasswordがnullの場合はスキップ（管理者がパスワードを変更する場合）
                 if (req.getCurrentPassword() != null) {
                     req.setCurrentPassword(CryptoUtil.decrypt(req.getCurrentPassword()));
+                }
+                // newPasswordがnullの場合はエラー（必須項目）
+                if (req.getNewPassword() == null) {
+                    throw new UnauthorizedException("新しいパスワード（暗号化）は必須です");
                 }
                 req.setNewPassword(CryptoUtil.decrypt(req.getNewPassword())); // 新しいパスワードを復号
             }
