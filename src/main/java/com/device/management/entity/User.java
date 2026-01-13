@@ -16,6 +16,7 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class User {
@@ -69,21 +70,5 @@ public class User {
     @EqualsAndHashCode.Exclude
     private List<SamplingCheck> samplingChecks = new ArrayList<>();
 
-    // ============= コンストラクタ =============
-
-    public User() {
-        this.createTime = LocalDateTime.now();
-        this.updateTime = LocalDateTime.now();
-    }
-
-    public User(String userId, String name, String deptId, Long userTypeId, String password) {
-        this.userId = userId;
-        this.name = name;
-        this.deptId = deptId;
-        this.userTypeId = userTypeId;
-        this.password = password;
-        this.createTime = LocalDateTime.now();
-        this.updateTime = LocalDateTime.now();
-    }
 
 }
