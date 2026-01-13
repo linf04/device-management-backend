@@ -85,7 +85,7 @@ public class DeviceUsagePermissionService {
         //パラメータを一つずつ確認して更新する
         // SmartITステータス更新
         if (updateDTO.getSmartitStatusId()!=null) {
-            Dict smartitDict = dictRepository.findById(updateDTO.getSmartitStatusId().toString())
+            Dict smartitDict = dictRepository.findById(updateDTO.getSmartitStatusId())
                     .orElseThrow(() -> new ResourceNotFoundException("SmartITステータスが存在しません"));
             existing.setSmartitStatus(smartitDict);
         }
@@ -96,7 +96,7 @@ public class DeviceUsagePermissionService {
 
         // USBステータス更新
         if (updateDTO.getUsbStatusId()!=null) {
-            Dict usbDict = dictRepository.findById(updateDTO.getUsbStatusId().toString())
+            Dict usbDict = dictRepository.findById(updateDTO.getUsbStatusId())
                     .orElseThrow(() -> new ResourceNotFoundException("USBステータスが存在しません"));
             existing.setUsbStatus(usbDict);
         }
@@ -107,7 +107,7 @@ public class DeviceUsagePermissionService {
 
         // アンチウイルスステータス更新
         if (updateDTO.getAntivirusStatusId()!=null) {
-            Dict antivirusDict = dictRepository.findById(updateDTO.getAntivirusStatusId().toString())
+            Dict antivirusDict = dictRepository.findById(updateDTO.getAntivirusStatusId())
                     .orElseThrow(() -> new ResourceNotFoundException("アンチウイルスステータスが存在しません"));
             existing.setAntivirusStatus(antivirusDict);
         }
@@ -118,7 +118,7 @@ public class DeviceUsagePermissionService {
 
         // ドメインステータス更新
         if (updateDTO.getDomainStatusId()!=null) {
-            Dict domainDict = dictRepository.findById(updateDTO.getDomainStatusId().toString())
+            Dict domainDict = dictRepository.findById(updateDTO.getDomainStatusId())
                     .orElseThrow(() -> new ResourceNotFoundException("ドメインステータスが存在しません"));
             existing.setDomainStatus(domainDict);
         }
@@ -178,7 +178,7 @@ public class DeviceUsagePermissionService {
 
         // ドメインステータス情報
         if (permission.getDomainStatus() != null) {
-            dto.setDomainStatusId(permission.getDomainStatus().getId());
+            dto.setDomainStatusId(permission.getDomainStatus().getDictId());
             dto.setDomainStatusName(permission.getDomainStatus().getDictItemName());
         }
         dto.setDomainGroup(permission.getDomainGroup());
@@ -186,14 +186,14 @@ public class DeviceUsagePermissionService {
 
         // SmartITステータス情報
         if (permission.getSmartitStatus() != null) {
-            dto.setSmartitStatusId(permission.getSmartitStatus().getId());
+            dto.setSmartitStatusId(permission.getSmartitStatus().getDictId());
             dto.setSmartitStatusName(permission.getSmartitStatus().getDictItemName());
         }
         dto.setNoSmartitReason(permission.getNoSmartitReason());
 
         // USBステータス情報
         if (permission.getUsbStatus() != null) {
-            dto.setUsbStatusId(permission.getUsbStatus().getId());
+            dto.setUsbStatusId(permission.getUsbStatus().getDictId());
             dto.setUsbStatusName(permission.getUsbStatus().getDictItemName());
         }
         dto.setUsbReason(permission.getUsbReason());
@@ -201,7 +201,7 @@ public class DeviceUsagePermissionService {
 
         // アンチウイルスソフトのステータス情報
         if (permission.getAntivirusStatus() != null) {
-            dto.setAntivirusStatusId(permission.getAntivirusStatus().getId());
+            dto.setAntivirusStatusId(permission.getAntivirusStatus().getDictId());
             dto.setAntivirusStatusName(permission.getAntivirusStatus().getDictItemName());
         }
         dto.setNoSymantecReason(permission.getNoSymantecReason());

@@ -57,7 +57,7 @@ public class DevicePermissionExcelService {
         List<Dict> dictList = dictRepository.findAll();
         dictCache = new HashMap<>();
         for (Dict dict : dictList) {
-            Long key = dict.getId();
+            Long key = dict.getDictId();
             dictCache.put(key, dict.getDictItemName());
         }
     }
