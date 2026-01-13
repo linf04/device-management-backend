@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -132,6 +133,17 @@ public class DeviceService {
         }
 
         // ip insert
+        // ipチェック
+        String ipAddress = deviceIpDTO.getIpAddress();
+        ipAddress = ipAddress.trim();
+
+        try {
+            InetAddress.getByName(ipAddress);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("IPアドレスの形式が無効です: " + ipAddress);
+        }
+
+        // insert
         DeviceIp deviceIpReturn = convertDeviceIpToEntity(deviceIpDTO);
         if (!deviceIpRepository.existsByIpAddress(deviceIpDTO.getIpAddress())) {
 
@@ -252,6 +264,17 @@ public class DeviceService {
         }
 
         // ip update
+        // ipチェック
+        String ipAddress = deviceIpDTO.getIpAddress();
+        ipAddress = ipAddress.trim();
+
+        try {
+            InetAddress.getByName(ipAddress);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("IPアドレスの形式が無効です: " + ipAddress);
+        }
+
+        // update
         DeviceIp deviceIpReturn = convertDeviceIpToEntity(deviceIpDTO);
         if(deviceIpRepository.existsByIpAddress(deviceIpDTO.getIpAddress())) {
 
