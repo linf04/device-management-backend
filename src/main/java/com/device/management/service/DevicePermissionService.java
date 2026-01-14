@@ -10,6 +10,7 @@ import com.device.management.repository.*;
 import com.device.management.security.JwtTokenProvider;
 import jakarta.annotation.Resource;
 import jakarta.persistence.criteria.*;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -42,6 +43,8 @@ public class DevicePermissionService {
     private UserRepository userRepository;
     @Resource
     DeviceUsagePermissionRepository deviceUsagePermissionRepository;
+    @Resource
+    HttpServletRequest httpServletRequest;
 
     public ApiResponse<?> addPermissions(PermissionInsertDTO permissionInsertDTO) {
         DeviceInfo deviceInfo = deviceRepository.findDeviceByDeviceId(permissionInsertDTO.getDeviceId());
@@ -58,8 +61,8 @@ public class DevicePermissionService {
         String permissionId = UUID.randomUUID().toString();
 
         devicePermissionRepository.save(DevicePermission.builder().permissionId(permissionId).device(deviceInfo).domainStatus(permissionInsertDTO.getDomainStatus()).domainGroup(permissionInsertDTO.getDomainGroup()).noDomainReason(permissionInsertDTO.getNoDomainReason()).smartitStatus(permissionInsertDTO.getSmartitStatus()).noSmartitReason(permissionInsertDTO.getNoSmartitReason()).usbStatus(permissionInsertDTO.getUsbStatus()).usbReason(permissionInsertDTO.getUsbReason()).usbExpireDate(permissionInsertDTO.getUsbExpireDate()).antivirusStatus(permissionInsertDTO.getAntivirusStatus()).noSymantecReason(permissionInsertDTO.getNoSymantecReason()).remark(permissionInsertDTO.getRemark()).createTime(LocalDateTime.now())
-                .creater("JS2115").updateTime(LocalDateTime.now())
-                .updater("JS2115").build());
+                .creater(jwtTokenProvider.getUserIdFromToken(httpServletRequest.getHeader("Authorization"))).updateTime(LocalDateTime.now())
+                .updater(jwtTokenProvider.getUserIdFromToken(httpServletRequest.getHeader("Authorization"))).build());
         permissionInsertDTO.setPermissionId(permissionId);
         return ApiResponse.success("権限追加成功",permissionInsertDTO);
     }
@@ -330,7 +333,7 @@ public class DevicePermissionService {
         }
 
         //更新者を設定する（現在のユーザーを取得）
-        existing.setUpdater("JS111");
+        existing.setUpdater(jwtTokenProvider.getUserIdFromToken(httpServletRequest.getHeader("Authorization")));
 
         if (updateDTO.getUsbExpireDate() != null) {
             existing.setUsbExpireDate(updateDTO.getUsbExpireDate());
