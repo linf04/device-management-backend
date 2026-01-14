@@ -38,76 +38,74 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        filterChain.doFilter(request, response);
+        // ログインインターフェースの場合、直接通す
+        String requestURI = request.getRequestURI();
+        if (requestURI.equals("/api/auth/login") || requestURI.equals("/auth/login")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-//        // ログインインターフェースの場合、直接通す
-//        String requestURI = request.getRequestURI();
-//        if (requestURI.equals("/api/auth/login") || requestURI.equals("/auth/login")) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-//
-//        try {
-//            String jwt = getJwtFromRequest(request);
-//
-//            // tokenがあるかチェック
-//            if (!StringUtils.hasText(jwt)) {
-//                // tokenがない場合、匿名アクセスが許可されているインターフェースかどうかをチェック
-//                if (isPermittedUrl(requestURI)) {
-//                    filterChain.doFilter(request, response);
-//                    return;
-//                } else {
-//                    // 認証が必要だがtokenがない場合、401を返す
-//                    log.warn("No JWT token found for protected endpoint: {}", requestURI);
-//                    sendErrorResponse(response, 40100, "トークンが無効または期限切れです");
-//                    return;
-//                }
-//            }
-//
-//            // tokenを検証
-//            if (jwtTokenProvider.validateToken(jwt)) {
-//                String userId = jwtTokenProvider.getUserIdFromToken(jwt);
-//
-//                UsernamePasswordAuthenticationToken authentication =
-//                        new UsernamePasswordAuthenticationToken(userId, null, new ArrayList<>());
-//                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-//
-//                SecurityContextHolder.getContext().setAuthentication(authentication);
-//                log.debug("User authenticated: {}", userId);
-//
-//                // フィルター連鎖を続行
-//                filterChain.doFilter(request, response);
-//            } else {
-//                // token検証に失敗
-//                log.warn("Token validation failed");
-//                sendErrorResponse(response, 40100, "トークンが無効または期限切れです");
-//            }
-//
-//        } catch (io.jsonwebtoken.security.SignatureException e) {
-//            // Token署名が無効
-//            log.warn("JWT signature invalid: {}", e.getMessage());
-//            sendErrorResponse(response, 40102, "トークンの署名が無効です");
-//        } catch (io.jsonwebtoken.ExpiredJwtException e) {
-//            // Tokenの有効期限切れ
-//            log.warn("JWT token expired: {}", e.getMessage());
-//            sendErrorResponse(response, 401, "トークンの有効期限が切れています");
-//        } catch (io.jsonwebtoken.MalformedJwtException e) {
-//            // Tokenフォーマットエラー
-//            log.warn("JWT malformed: {}", e.getMessage());
-//            sendErrorResponse(response, 40100, "トークンが無効または期限切れです");
-//        } catch (io.jsonwebtoken.UnsupportedJwtException e) {
-//            // サポートされていないTokenタイプ
-//            log.warn("Unsupported JWT: {}", e.getMessage());
-//            sendErrorResponse(response, 40100, "サポートされていないトークンです");
-//        } catch (IllegalArgumentException e) {
-//            // Tokenが空
-//            log.warn("JWT token is empty: {}", e.getMessage());
-//            sendErrorResponse(response, 40100, "トークンが無効または期限切れです");
-//        } catch (Exception ex) {
-//            // その他の例外
-//            log.error("Could not set user authentication in security context", ex);
-//            sendErrorResponse(response, 50001, "サーバーが混雑しています。しばらくしてから再度お試しください");
-//        }
+        try {
+            String jwt = getJwtFromRequest(request);
+
+            // tokenがあるかチェック
+            if (!StringUtils.hasText(jwt)) {
+                // tokenがない場合、匿名アクセスが許可されているインターフェースかどうかをチェック
+                if (isPermittedUrl(requestURI)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                } else {
+                    // 認証が必要だがtokenがない場合、401を返す
+                    log.warn("No JWT token found for protected endpoint: {}", requestURI);
+                    sendErrorResponse(response, 40100, "トークンが無効または期限切れです");
+                    return;
+                }
+            }
+
+            // tokenを検証
+            if (jwtTokenProvider.validateToken(jwt)) {
+                String userId = jwtTokenProvider.getUserIdFromToken(jwt);
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userId, null, new ArrayList<>());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.debug("User authenticated: {}", userId);
+
+                // フィルター連鎖を続行
+                filterChain.doFilter(request, response);
+            } else {
+                // token検証に失敗
+                log.warn("Token validation failed");
+                sendErrorResponse(response, 40100, "トークンが無効または期限切れです");
+            }
+
+        } catch (io.jsonwebtoken.security.SignatureException e) {
+            // Token署名が無効
+            log.warn("JWT signature invalid: {}", e.getMessage());
+            sendErrorResponse(response, 40102, "トークンの署名が無効です");
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            // Tokenの有効期限切れ
+            log.warn("JWT token expired: {}", e.getMessage());
+            sendErrorResponse(response, 401, "トークンの有効期限が切れています");
+        } catch (io.jsonwebtoken.MalformedJwtException e) {
+            // Tokenフォーマットエラー
+            log.warn("JWT malformed: {}", e.getMessage());
+            sendErrorResponse(response, 40100, "トークンが無効または期限切れです");
+        } catch (io.jsonwebtoken.UnsupportedJwtException e) {
+            // サポートされていないTokenタイプ
+            log.warn("Unsupported JWT: {}", e.getMessage());
+            sendErrorResponse(response, 40100, "サポートされていないトークンです");
+        } catch (IllegalArgumentException e) {
+            // Tokenが空
+            log.warn("JWT token is empty: {}", e.getMessage());
+            sendErrorResponse(response, 40100, "トークンが無効または期限切れです");
+        } catch (Exception ex) {
+            // その他の例外
+            log.error("Could not set user authentication in security context", ex);
+            sendErrorResponse(response, 50001, "サーバーが混雑しています。しばらくしてから再度お試しください");
+        }
     }
 
     /**

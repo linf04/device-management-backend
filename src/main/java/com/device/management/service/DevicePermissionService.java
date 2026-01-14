@@ -40,10 +40,6 @@ public class DevicePermissionService {
     @Resource
     private DictRepository dictRepository;
     @Resource
-    private UserRepository userRepository;
-    @Resource
-    DeviceUsagePermissionRepository deviceUsagePermissionRepository;
-    @Resource
     HttpServletRequest httpServletRequest;
 
     public ApiResponse<?> addPermissions(PermissionInsertDTO permissionInsertDTO) {
@@ -253,7 +249,7 @@ public class DevicePermissionService {
         log.info("権限の詳細を確認する，permissionId: {}", permissionId);
 
         //IDに基づいてデータベースから権限オブジェクトを取得する
-        DevicePermission permission = deviceUsagePermissionRepository.findById(permissionId)
+        DevicePermission permission = devicePermissionRepository.findById(permissionId)
                 .orElseThrow(() -> {
                     log.error("権限情報が存在しません，permissionId: {}", permissionId);
                     // 存在しない場合は例外をスローします。
@@ -340,7 +336,7 @@ public class DevicePermissionService {
         }
 
         //保存して更新
-        deviceUsagePermissionRepository.save(existing);
+        devicePermissionRepository.save(existing);
         log.info("権限情報の更新が完了しました，permissionId: {}", permissionId);
     }
 
