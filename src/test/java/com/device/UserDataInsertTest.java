@@ -20,11 +20,11 @@ public class UserDataInsertTest {
     void insertTestUsers() {
         // 插入测试用户
         User testUser = User.builder()
-                .userId("USER001")
+                .userId("USER003")
                 .deptId("D001")
                 .name("user")
                 .userTypeId(12L)
-                .password(passwordEncoder.encode("HYRON@JS2026")) // 加密明文密码
+                .password(passwordEncoder.encode("HYRON@JS2027")) // 加密明文密码
                 .createTime(LocalDateTime.now())
                 .creater("admin")
                 .updateTime(LocalDateTime.now())

@@ -2,12 +2,15 @@ package com.device.management.dto;
 
 import com.device.management.entity.DeviceIp;
 import com.device.management.entity.Monitor;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -31,21 +34,36 @@ public class DeviceFullDTO {
     private Long memoryId; //メモリID
     private Long ssdId; //SSDID
     private Long hddId; //HDDID
-    private String creater; //作成者
-    private String updater; //更新者 update
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createTime; // 作成日時
+    private String creater; // 作成者
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updateTime; // 更新日時
+    private String updater; // 更新者
 
     // monitor
-    private List<Monitor> monitors; // モニターリスト
-//    private String monitorName; // 'モニター名
-//    private Integer monitorId; // モニター番号 update
-
+    @JsonProperty("monitors")
+    @Builder.Default
+    private List<Monitor> monitors = new ArrayList<>();; // モニターリスト
     //ip
-    private List<DeviceIp> ipAddresses; // IPアドレスリスト
-//    private String ipAddress; //IPアドレス
-//    private Integer ipId; //IP番号 update
+    @JsonProperty("deviceIps")
+    @Builder.Default
+    private List<DeviceIp> deviceIps = new ArrayList<>();; // IPアドレスリスト
 
     // user
     private String name;
     private String deptId;
 
+    // 辞書項目
+    @JsonProperty("selfConfirm")
+    private DictDTO selfConfirmDict; // 本人確認辞書項目
+    @JsonProperty("os")
+    private DictDTO osDict; // オペレーティングシステム辞書項目
+    @JsonProperty("memory")
+    private DictDTO memoryDict; // メモリ辞書項目
+    @JsonProperty("ssd")
+    private DictDTO ssdDict; // SSD辞書項目
+    @JsonProperty("hdd")
+    private DictDTO hddDict; // HDD辞書項目
 }

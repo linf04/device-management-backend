@@ -2,16 +2,9 @@ package com.device.management.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-/**
- * ユーザエンティティ（usersテーブル）
- */
 
 @Entity
 @Table(name = "users")
@@ -27,36 +20,34 @@ public class User {
     @Column(name = "dept_id")
     private String deptId; // 部門
 
-    @Column(name = "name", length = 100, nullable = false)
+    @Column(name = "name")
     private String name; // 氏名
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_type_id", referencedColumnName = "dict_id",insertable = false, updatable = false)
-    private Dict userTypeDict; // ユーザタイプ（辞書項目：USER_TYPE 関連）
+    @Column(name = "user_type_id")
+    private Long userTypeId; // ユーザータイプID（dictテーブルと関連）
 
-    @Column(name = "password", length = 255, nullable = false)
-    private String password; // パスワード（暗号化保存）
+    @Column(name = "password")
+    private String password; // 暗号化後のパスワード
 
-    @CreationTimestamp
     @Column(name = "create_time")
     private LocalDateTime createTime; // 作成時間
 
-    @Column(name = "creater", length = 100)
+    @Column(name = "creater")
     private String creater; // 作成者
 
-    @UpdateTimestamp
     @Column(name = "update_time")
-    private LocalDateTime updateTime; // 更新日時
+    private LocalDateTime updateTime; // 更新時間
 
-    @Column(name = "updater", length = 100)
+    @Column(name = "updater")
     private String updater; // 更新者
 
     // ============= 関連関係 =============
 
     // ユーザータイプ（辞書関連）
 
-    @Column(name = "user_type_id")
-    private Long userTypeId; // ユーザータイプID（辞書項目：USER_TYPE 関連）
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_type_id", referencedColumnName = "dict_id",insertable = false, updatable = false)
+    private Dict userTypeDict; // ユーザタイプ（辞書項目：USER_TYPE 関連）
 
     // ユーザーが所有するデバイス（1対多）
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -64,11 +55,6 @@ public class User {
     @EqualsAndHashCode.Exclude
     private List<Device> devices = new ArrayList<>();
 
-    // ユーザーのサンプリング検査記録（一対多）
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private List<SamplingCheck> samplingChecks = new ArrayList<>();
 
 
 }

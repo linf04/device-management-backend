@@ -105,9 +105,6 @@ public class Device {
     @OneToOne(mappedBy = "device", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private DevicePermission devicePermission;
 
-    @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<SamplingCheck> samplingChecks;
-
     @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
     private Set<DeviceIp> ipList = new HashSet<>();
 

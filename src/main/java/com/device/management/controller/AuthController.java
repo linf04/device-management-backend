@@ -6,7 +6,6 @@ import com.device.management.dto.LoginDto;
 import com.device.management.dto.ApiResponse;
 import com.device.management.service.AuthService;
 import com.device.management.security.CryptoUtil;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,15 +24,14 @@ public class AuthController {
 
     /* 1. ログイン（密文） */
     @PostMapping("/login")
-    public ApiResponse<LoginDto> login(@Valid @RequestBody LoginRequest loginRequest) {
-        CryptoUtil.decryptPasswordFields(loginRequest);
+    public ApiResponse<LoginDto> login(@RequestBody LoginRequest loginRequest) {
+        CryptoUtil.decryptPasswordFields(loginRequest);// パスワードフィールドを復号
         return authService.login(loginRequest);
     }
 
     /* 2. パスワード変更（密文） */
     @PostMapping("/change-password")
-    public ApiResponse<Void> changePassword(
-            @Valid @RequestBody ChangePasswordRequest req) {// @RequestBody：JSON形式のリクエストボディを受け取る、@RequestHeader：Authorizationリクエストヘッダーを取得
+    public ApiResponse<Void> changePassword(@RequestBody ChangePasswordRequest req) {
         CryptoUtil.decryptPasswordFields(req);// パスワードフィールドを復号
         return authService.changePassword(req); // サービス層を呼び出し、復号後サービス層に転送
     }
