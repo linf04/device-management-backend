@@ -18,34 +18,32 @@ public interface DeviceRepository extends JpaRepository<Device, String> {
 
     List<Device> findByDeviceId(String deviceId);
 
-    // すべての重複しない開発室名を取得
-    @Query("SELECT DISTINCT d.devRoom FROM Device d WHERE d.devRoom IS NOT NULL AND TRIM(d.devRoom) != '' ORDER BY d.devRoom")
-    List<String> findDistinctDevRooms();
-
-    // すべての重複しないプロジェクト名を取得
-    @Query("SELECT DISTINCT d.project FROM Device d WHERE d.project IS NOT NULL AND TRIM(d.project) != '' ORDER BY d.project")
-    List<String> findDistinctProjects();
-
-    // 条件に基づいてユーザーIDリストを検索
-    @Query("SELECT DISTINCT d.userId FROM Device d WHERE d.userId IS NOT NULL " +
-            "AND (:deviceName IS NULL OR d.computerName LIKE %:deviceName%) " +
-            "AND (:userId IS NULL OR d.userId = :userId)")
-    List<String> findUserIdsByCondition(
-            @Param("deviceName") String deviceName,
-            @Param("userId") String userId
-    );
-
-    // ユーザーIDリストに基づいてデバイスを検索（関連付け付き）
+    // 条件検索（デバイス名、ユーザーID）
     @Query("SELECT d FROM Device d " +
+            "LEFT JOIN FETCH d.user u " +
             "LEFT JOIN FETCH d.osDict " +
             "LEFT JOIN FETCH d.memoryDict " +
             "LEFT JOIN FETCH d.ssdDict " +
             "LEFT JOIN FETCH d.hddDict " +
             "LEFT JOIN FETCH d.selfConfirmDict " +
-            "WHERE d.userId IN :userIds")
-    List<Device> findByUserIdsWithDicts(@Param("userIds") List<String> userIds);
+            "WHERE (:deviceName IS NULL OR d.computerName LIKE %:deviceName%) " +
+            "AND (:userId IS NULL OR d.userId = :userId)")
+    List<Device> findByConditions(
+            @Param("deviceName") String deviceName,
+            @Param("userId") String userId
+    );
 
-    // デバイスIDに基づいてデバイスを検索（関連付け付き）
+    // 条件検索の総レコード数
+    @Query("SELECT COUNT(d) FROM Device d " +
+            "LEFT JOIN d.user u " +
+            "WHERE (:deviceName IS NULL OR d.computerName LIKE %:deviceName%) " +
+            "AND (:userId IS NULL OR d.userId = :userId)")
+    Long countByConditions(
+            @Param("deviceName") String deviceName,
+            @Param("userId") String userId
+    );
+
+    // デバイス詳細（辞書情報を含む）
     @Query("SELECT d FROM Device d " +
             "LEFT JOIN FETCH d.osDict " +
             "LEFT JOIN FETCH d.memoryDict " +
@@ -55,48 +53,11 @@ public interface DeviceRepository extends JpaRepository<Device, String> {
             "WHERE TRIM(d.deviceId) = :deviceId")
     Device findByDeviceIdWithDicts(@Param("deviceId") String deviceId);
 
-    // 条件に基づいてデバイスをページング検索
-    @Query("SELECT d FROM Device d " +
-            "LEFT JOIN FETCH d.user u " +
-            "LEFT JOIN FETCH d.osDict " +
-            "LEFT JOIN FETCH d.memoryDict " +
-            "LEFT JOIN FETCH d.ssdDict " +
-            "LEFT JOIN FETCH d.hddDict " +
-            "LEFT JOIN FETCH d.selfConfirmDict " +
-            "WHERE (:deviceName IS NULL OR d.computerName LIKE %:deviceName%) " +
-            "AND (:userId IS NULL OR d.userId = :userId) " +
-            "AND (:name IS NULL OR u.name LIKE %:name%) " +
-            "AND (:project IS NULL OR d.project LIKE %:project%) " +
-            "AND (:devRoom IS NULL OR d.devRoom LIKE %:devRoom%)")
-    List<Device> findByConditions(
-            @Param("deviceName") String deviceName,
-            @Param("userId") String userId,
-            @Param("name") String name,
-            @Param("project") String project,
-            @Param("devRoom") String devRoom
-    );
-
-    // 総レコード数を取得（条件付き）
-    @Query("SELECT COUNT(d) FROM Device d " +
-            "LEFT JOIN d.user u " +
-            "WHERE (:deviceName IS NULL OR d.computerName LIKE %:deviceName%) " +
-            "AND (:userId IS NULL OR d.userId = :userId) " +
-            "AND (:name IS NULL OR u.name LIKE %:name%) " +
-            "AND (:project IS NULL OR d.project LIKE %:project%) " +
-            "AND (:devRoom IS NULL OR d.devRoom LIKE %:devRoom%)")
-    Long countByConditions(
-            @Param("deviceName") String deviceName,
-            @Param("userId") String userId,
-            @Param("name") String name,
-            @Param("project") String project,
-            @Param("devRoom") String devRoom
-    );
-
-    // デバイスIDリストに基づいてデバイスIP情報を検索
+    // デバイスIP情報のバッチ取得
     @Query("SELECT TRIM(d.device.deviceId) as deviceId, d FROM DeviceIp d WHERE d.device.deviceId IN :deviceIds")
     List<Object[]> findDeviceIpsByDeviceIds(@Param("deviceIds") List<String> deviceIds);
 
-    // デバイスIDリストに基づいてモニター情報を検索
+    // モニター情報のバッチ取得
     @Query("SELECT TRIM(m.device.deviceId) as deviceId, m FROM Monitor m WHERE m.device.deviceId IN :deviceIds")
     List<Object[]> findMonitorsByDeviceIds(@Param("deviceIds") List<String> deviceIds);
 }
