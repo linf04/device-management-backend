@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeviceUsagePermissionDTO {
+public class PermissionUpdateDTO {
     private String permissionId;
     private String deviceId;
     private String computerName;
@@ -24,21 +24,21 @@ public class DeviceUsagePermissionDTO {
     private String deptId;
 
     //権限状態（dict表を通じて関連付け）
-    private Long domainStatusId;
+    private Long domainStatus;
     private String domainStatusName;
     private String domainGroup;
     private String noDomainReason;
 
-    private Long smartitStatusId;
+    private Long smartitStatus;
     private String smartitStatusName;
     private String noSmartitReason;
 
-    private Long usbStatusId;
+    private Long usbStatus;
     private String usbStatusName;
     private String usbReason;
     private LocalDate usbExpireDate;
 
-    private Long antivirusStatusId;
+    private Long antivirusStatus;
     private String antivirusStatusName;
     private String noSymantecReason;
 

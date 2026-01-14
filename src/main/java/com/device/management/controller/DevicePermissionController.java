@@ -48,7 +48,7 @@ public class DevicePermissionController {
     //権限を追加します
     @PostMapping
     public ApiResponse<?> addPermissions(@RequestBody PermissionInsertDTO devicePermission) {
-        return ApiResponse.success("権限追加成功", devicePermissionService.addPermissions(devicePermission));
+        return devicePermissionService.addPermissions(devicePermission);
     }
 
     //権限をexcelファイル形式でエクスポートします
@@ -79,9 +79,9 @@ public class DevicePermissionController {
      * 4. APIレスポンスとして統一された ApiResponse にパッケージ化して返す
      */
     @GetMapping("/{permissionId}")
-    public ApiResponse<DeviceUsagePermissionDTO> getPermissionDetail(@PathVariable String permissionId) {
+    public ApiResponse<PermissionUpdateDTO> getPermissionDetail(@PathVariable String permissionId) {
         //サービス層を呼び出してデータを取得する
-        DeviceUsagePermissionDTO dto = devicePermissionService.findPermissionDetail(permissionId);
+        PermissionUpdateDTO dto = devicePermissionService.findPermissionDetail(permissionId);
         //統一されたレスポンス形式をカプセル化して返す
         return ApiResponse.success("検索に成功しました", dto);
     }
@@ -99,7 +99,7 @@ public class DevicePermissionController {
     public ApiResponse<Void> updatePermission(
             //更新する権限ID
             @PathVariable String permissionId,
-            @RequestBody DeviceUsagePermissionDTO updateDTO) {
+            @RequestBody PermissionUpdateDTO updateDTO) {
 
         devicePermissionService.updatePermissionByFields(permissionId, updateDTO);
         //成功レスポンスを返す

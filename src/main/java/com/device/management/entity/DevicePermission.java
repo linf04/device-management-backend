@@ -28,10 +28,8 @@ public class DevicePermission {
             foreignKey = @ForeignKey(name = "fk_permission_device"))
     private DeviceInfo device;
 
-    @ManyToOne
-    @JoinColumn(name = "domain_status_id", referencedColumnName = "dict_id",
-            foreignKey = @ForeignKey(name = "fk_permission_domain"))
-    private Dict domainStatus;
+    @Column(name = "domain_status_id")
+    private Long domainStatus;
 
     @Column(name = "domain_group", length = 100)
     private String domainGroup;
@@ -39,18 +37,14 @@ public class DevicePermission {
     @Column(name = "no_domain_reason", columnDefinition = "text")
     private String noDomainReason;
 
-    @ManyToOne
-    @JoinColumn(name = "smartit_status_id", referencedColumnName = "dict_id",
-            foreignKey = @ForeignKey(name = "fk_permission_smartit"))
-    private Dict smartitStatus;
+    @Column(name = "smartit_status_id")
+    private Long smartitStatus;
 
     @Column(name = "no_smartit_reason", columnDefinition = "text")
     private String noSmartitReason;
 
-    @ManyToOne
-    @JoinColumn(name = "usb_status_id", referencedColumnName = "dict_id",
-            foreignKey = @ForeignKey(name = "fk_permission_usb"))
-    private Dict usbStatus;
+    @Column(name = "usb_status_id")
+    private Long usbStatus;
 
     @Column(name = "usb_reason", columnDefinition = "text")
     private String usbReason;
@@ -58,10 +52,8 @@ public class DevicePermission {
     @Column(name = "usb_expire_date")
     private LocalDate usbExpireDate;
 
-    @ManyToOne
-    @JoinColumn(name = "antivirus_status_id", referencedColumnName = "dict_id",
-            foreignKey = @ForeignKey(name = "fk_permission_antivirus"))
-    private Dict antivirusStatus;
+    @Column(name = "antivirus_status_id")
+    private Long antivirusStatus;
 
     @Column(name = "no_symantec_reason", columnDefinition = "text")
     private String noSymantecReason;

@@ -61,30 +61,20 @@ public class DeviceInfo {
     @Column(name = "remark", length = Integer.MAX_VALUE)
     private String remark;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "self_confirm_id")
-    private Dict selfConfirm;
+    @Column(name = "self_confirm_id")
+    private Long selfConfirm;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "os_id")
-    private Dict os;
+    @Column(name = "os_id")
+    private Long os;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "memory_id")
-    private Dict memory;
+    @Column(name = "memory_id")
+    private Long memory;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "ssd_id")
-    private Dict ssd;
+    @Column(name = "ssd_id")
+    private Long ssd;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "hdd_id")
-    private Dict hdd;
+    @Column(name = "hdd_id")
+    private Long hdd;
 
     @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")
