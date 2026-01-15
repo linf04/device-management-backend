@@ -69,9 +69,65 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(AllException.class)
     public ResponseEntity<ApiResponse<?>> handleGlobalException(
-            Exception ex, WebRequest request) {
+            AllException ex, WebRequest request) {
         log.error("Unexpected error: {}", ex.getMessage(), ex);
         ApiResponse<?> response = ApiResponse.error(500, "サーバー内部エラー");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+
+
+    /**
+     * ビジネスロジックの例外を処理する
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse<?>> handleIllegalStateException(
+            IllegalStateException ex, WebRequest request) {
+        log.warn("Business logic error: {}", ex.getMessage());
+        ApiResponse<?> response = ApiResponse.error(400, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
+     * 不正なパラメータ例外を処理する
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(
+            IllegalArgumentException ex, WebRequest request) {
+        log.warn("Invalid argument: {}", ex.getMessage());
+        ApiResponse<?> response = ApiResponse.error(400, "无效参数: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+
+    /**
+     * 资源冲突异常处理（409）
+     */
+    @ExceptionHandler(ResourceConflictException.class)
+    public ResponseEntity<ApiResponse<?>> handleResourceConflictException(
+            ResourceConflictException ex, WebRequest request) {
+        log.warn("Resource conflict: {}", ex.getMessage());
+        ApiResponse<?> response = ApiResponse.error(409, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+
+    @ExceptionHandler(ParameterException .class)
+    public ResponseEntity<ApiResponse<?>> handleBadRequest(ParameterException  ex) {
+        log.warn("Bad request: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error(400, ex.getMessage()));
+    }
+
+    /**
+     * IP地址格式无效异常处理
+     */
+    @ExceptionHandler(InvalidIpAddressException.class)
+    public ResponseEntity<ApiResponse<?>> handleInvalidIpAddressException(
+            InvalidIpAddressException ex, WebRequest request) {
+        log.warn("Invalid IP address format: {}", ex.getMessage());
+        ApiResponse<?> response = ApiResponse.error(ex.getCode(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+
 }
