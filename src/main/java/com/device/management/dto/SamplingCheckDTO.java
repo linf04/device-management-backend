@@ -36,4 +36,7 @@ public class SamplingCheckDTO {
     private Boolean securityPatch;
     private Boolean antivirusProtection;
     private Boolean bootAuthentication;
+    
+    // 显示器名称（不存在于 sampling_check 表）
+    private String monitorName;
 }

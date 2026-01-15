@@ -6,20 +6,12 @@ import com.device.management.dto.SamplingCheckDTO;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -31,91 +23,9 @@ public class SamplingCheckController {
     //xiaoshuang
     //レポートのエクスポート
     @GetMapping("/export")
-    public void exportSamplingChecks(@RequestParam String reportCode,
-                                     HttpServletResponse response) throws IOException {
-        //ブックの作成
-        Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("工作现场检查");
-
-        //ヘッダー、テーブル内容の書き込み
-        setTableHead(sheet);
-        List<SamplingCheckDTO> samplingCheckDTOS = samplingCheckService.findByReportId(reportCode);
-        setTableContent(sheet,1,samplingCheckDTOS);
-
-        // レスポンスヘッダの設定
-        String fileName = reportCode + "月度检查表.xlsx";
-        String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + encodedFileName );
-
-        // ライト出力ストリーム
-        workbook.write(response.getOutputStream());
-        workbook.close();
+    public void exportSamplingChecks(@RequestParam(required = false)String reportCode, HttpServletResponse response) throws IOException {
+        samplingCheckService.exportAll(reportCode, response);
     }
-
-    //ヘッダーの作成
-    private void setTableHead(Sheet sheet) {
-        Row row0 = sheet.createRow(0);
-        Row row1 = sheet.createRow(1);
-
-        // 最初の行ヘッダ
-        row0.createCell(0).setCellValue("编号");
-        row0.createCell(1).setCellValue("工号");
-        row0.createCell(2).setCellValue("姓名");
-        row0.createCell(3).setCellValue("设备编号");
-        row0.createCell(4).setCellValue("检查项目");
-        row0.createCell(10).setCellValue("处置措施");
-        // 第2行ヘッダ
-        row1.createCell(1).setCellValue("工号");
-        row1.createCell(2).setCellValue("姓名");
-        row1.createCell(4).setCellValue("开机认证");
-        row1.createCell(5).setCellValue("密码屏保");
-        row1.createCell(6).setCellValue("安装软件");
-        row1.createCell(7).setCellValue("安全补丁");
-        row1.createCell(8).setCellValue("病毒防护");
-        row1.createCell(9).setCellValue("USB接口(封条)");
-
-        //ヘッダーのマージ
-        sheet.addMergedRegion(new CellRangeAddress(0, 1, 0, 0));
-        sheet.addMergedRegion(new CellRangeAddress(0, 1, 1, 1));
-        sheet.addMergedRegion(new CellRangeAddress(0, 1, 2, 2));
-        sheet.addMergedRegion(new CellRangeAddress(0, 1, 3, 3));
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 4, 9));
-        sheet.addMergedRegion(new CellRangeAddress(0, 1, 10, 10));
-    }
-
-    //データベースレコードをテーブルに書き込む
-    private void setTableContent(Sheet sheet, int endRow, List<SamplingCheckDTO> samplingCheckDTOS) {
-        int rowNum = 0;
-        for(SamplingCheckDTO samplingCheckDTO : samplingCheckDTOS) {
-            Row row = sheet.createRow( ++endRow );
-            row.createCell(0).setCellValue( ++rowNum );
-            row.createCell(1).setCellValue( samplingCheckDTO.getUserId());
-            row.createCell(2).setCellValue( samplingCheckDTO.getName());
-            row.createCell(3).setCellValue( samplingCheckDTO.getDeviceId());
-            row.createCell(10).setCellValue( samplingCheckDTO.getDisposalMeasures());
-            //OptionクラスでNULL値の可能性のあるフィールドを処理する
-            Optional<Boolean> op1 = Optional.ofNullable(samplingCheckDTO.getBootAuthentication());
-            if(op1.orElse(false)) row.createCell(4).setCellValue("○");
-
-            Optional<Boolean> op2 = Optional.ofNullable(samplingCheckDTO.getScreenSaverPwd());
-            if(op2.orElse(false)) row.createCell(5).setCellValue("○");
-
-            Optional<Boolean> op3 = Optional.ofNullable(samplingCheckDTO.getInstalledSoftware());
-            if(op3.orElse(false)) row.createCell(6).setCellValue("○");
-
-            Optional<Boolean> op4 = Optional.ofNullable(samplingCheckDTO.getSecurityPatch());
-            if(op4.orElse(false)) row.createCell(7).setCellValue("○");
-
-            Optional<Boolean> op5 = Optional.ofNullable(samplingCheckDTO.getAntivirusProtection());
-            if(op5.orElse(false)) row.createCell(8).setCellValue("○");
-
-            Optional<Boolean> op6 = Optional.ofNullable(samplingCheckDTO.getUsbInterface());
-            if(op6.orElse(false)) row.createCell(9).setCellValue("○");
-        }
-    }
-
-
 
     //wangjunxi
     //詳細情報の取得
@@ -141,7 +51,7 @@ public class SamplingCheckController {
             @RequestParam(required = false) String userId) {     //ユーザーIDでフィルタリング可能
 
         try {
-            Page<SamplingCheckDTO> result = samplingCheckService.getSamplingChecks(page, size, deviceId, userId);    //データの取得を試行
+            Page<SamplingCheckDTO> result = samplingCheckService.findAllWithPageAndCondition(page, size, deviceId, userId);    //データの取得を試行
             return ApiResponse.page(
                     result.getContent(),       // 現在のページのデータリスト
                     result.getTotalElements(), // 総件数
