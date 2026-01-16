@@ -146,7 +146,6 @@
         </dependency>
 
         <!--正则-->
-        <!-- 已存在则忽略 -->
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
