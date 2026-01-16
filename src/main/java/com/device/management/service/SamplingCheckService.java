@@ -267,5 +267,10 @@ public class SamplingCheckService {
         }
         sheet.setColumnWidth(10, 10000);
     }
-}
 
+    public void deleteByDeviceId(String deviceId) {
+        log.info("delete by device id {}", deviceId);
+        samplingCheckRepository.deleteByDeviceId(deviceId);
+    }
+
+}

@@ -230,7 +230,7 @@ public class AuthServiceImpl implements AuthService {
         if (!req.getNewPassword().matches(newPasswordPattern)) {
             return ApiResponse.error(40002, "新パスワードは8文字以上で英字・数字・特殊文字を含む必要があります");
         }
-        
+
         // 9. パスワードを更新する
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));
         userRepository.save(user);

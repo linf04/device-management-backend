@@ -1,22 +1,18 @@
 package com.device.management.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /**
- * カスタム例外クラス
+ * リソース未検出例外（404）
+ * リソース不存在時のシナリオ用
+ *
+ * @author device-management
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class ResourceNotFoundException extends RuntimeException {
-    private int code;
-    private String message;
 
     public ResourceNotFoundException(String message) {
         super(message);
-        this.code = 404;
-        this.message = message;
+    }
+
+    public ResourceNotFoundException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
