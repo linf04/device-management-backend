@@ -145,6 +145,14 @@
             <scope>provided</scope>
         </dependency>
 
+        <!--正则-->
+        <!-- 已存在则忽略 -->
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>1.8.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

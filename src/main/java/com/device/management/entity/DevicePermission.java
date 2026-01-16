@@ -90,7 +90,7 @@ public class DevicePermission {
     @Column(name = "antivirus_status_id")
     private Long antivirusStatusId;// アンチウイルス状態ID（辞書項目：ANTIVIRUS_STATUS関連）
 
-    // ============= 构造函数 =============
+    // ============= コンストラクタ =============
 
     public DevicePermission() {
         this.createTime = LocalDateTime.now();

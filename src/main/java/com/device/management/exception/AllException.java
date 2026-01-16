@@ -1,22 +1,18 @@
 package com.device.management.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /**
- * 全ての認証例外
+ * 一般例外（500）
+ * 予期しないサーバー内部エラー用
+ *
+ * @author device-management
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class AllException extends RuntimeException {
-    private int code;
-    private String message;
 
     public AllException(String message) {
         super(message);
-        this.code = 500;
-        this.message = message;
+    }
+
+    public AllException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

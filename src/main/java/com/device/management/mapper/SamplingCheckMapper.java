@@ -23,3 +23,4 @@ public interface SamplingCheckMapper {
     @Mapping(target = "createTime", ignore = true)
     void updateEntityFromDto(SamplingCheckDTO dto, @MappingTarget SamplingCheck entity);
 }
+
