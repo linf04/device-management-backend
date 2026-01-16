@@ -36,7 +36,10 @@ public class SamplingCheckDTO {
     private Boolean securityPatch;
     private Boolean antivirusProtection;
     private Boolean bootAuthentication;
+<<<<<<< HEAD
     
     //ディスプレイ名（sampling _ checkテーブルに存在しない）
     private String monitorName;
+=======
+>>>>>>> parent of 5adb978 (業務要件を満たすためにエンティティクラスのフィールドを追加した)
 }
